@@ -1,14 +1,16 @@
  ;; Elizabeth E. Esterly
  ;; elizabeth@cs.unm.edu
  ;; The University of New Mexico
- ;; Swarmathon 1 
- ;; Last Revision: 12/27/2016
- 
+ ;; Swarmathon 1: Introduction to Bio-Inspired Search
+ ;; Last Revision 12/27/2016
 
- ;;;;;;;;;;;;;;;;;;;;;;;;;;
- ;;    Globals           ;;
- ;;;;;;;;;;;;;;;;;;;;;;;;;;
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ ;;    Globals and Properties    ;;
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  ;----------------------------------------------------------------------------------------------
+ 
+ ;;The default agent in Netlogo is a turtle. We want to use robots! 
+ breed [robots robot]
  
  ;;Let's load the bitmap extension to use a Mars planet background.
  extensions[ bitmap ]
@@ -36,34 +38,27 @@
    bitmap:copy-to-pcolors bitmap:import "mars.jpg" true
    
    
-   ;;1) Set numberOfRocks to 0 to start
- 
+   ;;1) Set numberOfRocks to 0 to start 
    
    
    ;;2) Set robots to start in search mode
    
    
-   
-   ;;3) Here we create a turtle. NetLogo's default model is a turtle.
-   ;;Change its shape from a turtle to a robot.
+   ;;3) Here we create a robot. NetLogo's default shape for an agent is a turtle, though,
+   ;;so change its shape from a turtle to a robot.
    ;;Set its size to 8, so you can see it more clearly.
  
-   
-  
    
    ;;4) Let's set a maximum of 25 random patches to the color yellow. 
    ;; pcolor means patch color.
    ;;The yellow patches will represent the rocks that we are gathering.
    ;;We don't want to make rocks that are off the planet, so we check if the random
    ;;patch selected is black. We won't put a rock there if it is. 
-   ;; != means does not equal.
+   ;; != means 'does not equal'.
    ;;When we add a rock, we also add 1 to the numberOfRocks variable to keep track of how
    ;;many rocks we have.
    
-   
-   
-   
-   
+
    ;;5) Let's make a maximum of 10 additional clusters of rocks for the robot to pick up.
    ;;We don't want to make rocks that are off the planet, so we check for black patches like before. 
    ;;This time we also check for yellow patches, because we don't want to put a rock on top of
@@ -72,7 +67,6 @@
    ;;and add 1 to our numberOfRocks variable like before.
    ;;This time, we ask the patches to the North, South, East, and West to become rocks also and add
    ;;those to the variable numberOfRocks.
-   
    
    
    ;;This code makes a base for the robot to return to when it finds a rock.
@@ -86,11 +80,9 @@
      ]
    ]                      
                                         
-  
   ;;reset ticks to 0
   reset-ticks
-  
-  
+
  end
  
  ;------------------------------------------------------------------------------------
@@ -100,12 +92,12 @@
  to go
    
    ;;run the program until all rocks are collected
-   while [ numberOfRocks > 0 ]  
+   if [count patches with [pcolor = yellow] > 0]  
    [
-     ask turtles
+     ask robots
      [
    
-       ;;2) ask the turtles (robots) if they are searching or not
+       ;;2) ask the robots if they are searching or not
    
       
    
@@ -132,22 +124,19 @@
     
  to wiggle
    
-   ;; 1) turn right 0 - 40 degrees     
+   ;; 1) turn right 0 - maxAngle degrees     
   
-   
-              
-   ;; 2) turn left 0 - 40 degrees
-   
+          
+   ;; 2) turn left 0 - maxAngle degrees
    
    
    ;; 3) turn around and face the origin if we hit the edge of the planet 
    ;; (the patch color is black at the edge of the planet)
   
-   
-   
+
    ;; 4) go forward one patch
    
-   
+  
  end
  
  
@@ -160,18 +149,15 @@
    
    ;;1) Ask the 8 patches around the robot if the patch color is yellow
    
-  
-       
+   
    ;;2) If it is, take one rock away, and set search mode to false.
    ;;   Change the patch color to red where we removed the rock.
          
        
-  
    ;;3) If they're not searching anymore, that means they found a rock.
    ;;Change the robot's shape to the one holding a rock.
    
-   
-  
+
  end   
  
  ;------------------------------------------------------------------------------------
@@ -185,13 +171,11 @@
    
    
  ;;2) Change the robot's shape to the one without the rock,
-     
-     
+       
  
  ;;3) and start searching again.
   
-  
-                                 
+                             
  ;;4)otherwise, we didn't find the base yet--face the base
   
  
