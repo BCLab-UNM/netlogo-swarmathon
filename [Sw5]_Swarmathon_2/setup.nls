@@ -1,0 +1,26 @@
+to setup
+
+  no-display
+  clear-all
+  reset-ticks
+
+  bitmap:copy-to-pcolors bitmap:import "parkinglot.jpg" true
+  ask patches [ set base-pcolor pcolor ]
+
+  setup-tags
+  
+  create-turtles number-of-robots
+  [
+    set shape "robot"
+    set size 8
+    set searching? true
+    set returning? false
+  ]
+
+  display
+
+end
+
+
+
+
