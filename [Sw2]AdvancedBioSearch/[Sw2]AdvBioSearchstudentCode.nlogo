@@ -1,94 +1,113 @@
-
  ;; Elizabeth E. Esterly
- ;; eesterly@unm.edu
+ ;; elizabeth@cs.unm.edu
  ;; The University of New Mexico
- ;; Mars Robot 2: Recruitment
- ;; Last Revision: 07/24/2015
+ ;; Swarmathon 2: Advanced Bio-Inspired Search
+ ;; Last Revision 12/29/2016
 
-
- 
- ;;;;;;;;;;;;;;;;;;;;;;;;;;
- ;;    Globals           ;;
- ;;;;;;;;;;;;;;;;;;;;;;;;;;
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ ;;    Globals and Properties    ;;
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  ;----------------------------------------------------------------------------------------------
+ 
+ ;;The default agent in Netlogo is a turtle. We want to use robots! 
+ breed [robots robot]
  
  ;;Let's load the bitmap extension to use a Mars planet background.
  extensions[ bitmap ]
  
- globals
- [ 
-   numberOfRocks           ;;total number of rocks to gather on the grid
-   rockLocationX           ;;when a robot finds a rock with other rocks around it,
-   rockLocationY           ;;it recruits other robots in the recruiting radius to these coords.
- ]
- 
- ;-----------------------------------------------------------------------
- ;;In Mars Robot 1, we only had one robot. 
- ;;Now we have multiple robots, and they must each know what mode they
- ;;are currently in.
- ;;The robots can now be in 3 additional modes.
- ;;If a robot is returning, it is dropping off a rock.
- ;;If a robot is recruiting, it is asking other robots who are searching? to come 
- ;;to its position because there are rocks there.
- ;;If a robot is recruited? it is going to the position that the recruiting? robot 
- ;;asked it to.
- ;;targetX and targetY are the coordinates a recruited? robot is going to.
- 
- 
- ;;1) turtles (robots) each have their own list of modes and targetX and targetY.
+ ;;We need to keep track of how many rocks are left to gather, and if our robot is looking for a rock.
+ globals [ numberOfRocks ]         ;;total number of rocks to gather on the grid
 
+;;We need each robot to know some information about itself.
+ robots-own [
+   searching?                      ;;robots need to know if they are in the searching state.
+   
+   ]           
+ 
+ ;;We need each patch to know some information about itself.
+ patches-own [
+   baseColor                       ;;Patches need to know what color they started as.
+   
+   ]
+ 
   
+ 
  ;--------------------------------------------------------------------------------------
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;
  ;;       Setup           ;;
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;
  
  to setup 
-
+                  
    ;;Clear all the data for a fresh start
    clear-all
    
    ;;Import the background image of Mars
    bitmap:copy-to-pcolors bitmap:import "mars.jpg" true
    
-   ;-----------------------------------------------------------------------
-   ;;1)Set numberOfRocks to 0 to start
+   ;;Patches remember their starting color
+   ask patches [set baseColor pcolor]
+   
+   ;;1) Set the global numberOfRocks to 0 to start 
+   set numberOfRocks 0
   
+     
+   ;;2) Here we create some robots. NetLogo's default shape for an agent is a turtle,
+   ;;so change their shape from a turtle to a robot.
+   ;;Set its size to 8, so you can see it more clearly.
+   create-robots numberOfRobots [
+     set shape "robot"
+     set size 8
+   ]
    
-   ;;2)We'll use the slider value for numberOfRobots to determine how many 
-   ;; turtles (robots) to create.
-   ;;Change their shape from a turtle to a robot.
-   ;;Set their size to 8, so you can see them more clearly.
- 
+   ;;3) Set robots to start in search mode
+   ;;  also set robots to start without site fidelity,
+   ;;  and set the site fidelity coordinates to the origin.
+   ask robots [
+     set searching? true
+     ]
+
+   ;;4) Let's set some random patches to the color yellow to represent rocks. 
+   ;; We'll get the number of random patches from the slider singleRocks.
+   ;; pcolor means patch color.
+   ;; We don't want to make rocks that are off the planet, so we check if the random
+   ;; patch selected is black. We won't put a rock there if it is. We also don't want to add
+   ;; a rock right on top of another rock, so we'll check that too.
+   ;; != means 'does not equal'.
+   ;; Let's update our global variable numberOfRocks to keep track of 
+   ;; how many rocks we have. We do this after adding the rocks.
+   let targetPatches singleRocks
+     while [targetPatches > 0][
+       ask one-of patches[
+         if pcolor != black and pcolor != yellow[
+           set pcolor yellow
+           set targetPatches targetPatches - 1
+         ]
+       ]
+     ]
+     set numberOfRocks (numberOfRocks + singleRocks)
+
+
+   ;;5) Now, let's make some clusters of rocks for the robot to pick up.
+   ;; We'll get the number of clusters from the slider clusterRocks.
+   ;; We don't want to make rocks in an illegal place, so we check for black and yellow patches like before. 
+   ;; This time we must also ask the patches to the North, South, East, and West of our target patch to become 
+   ;; rocks also and add but only if they are not off-world or already rocks.
+   ;; Update numberOfRocks again.
+   set targetPatches (clusterRocks * 5)
+     while [targetPatches > 0][
+       ask one-of patches[
+         if pcolor != black and pcolor != yellow 
+            and [pcolor] of neighbors4 != black and [pcolor] of neighbors4 != yellow[
+           set pcolor yellow
+           ask neighbors4[ set pcolor yellow ]
+           set targetPatches targetPatches - 5
+         ]
+       ]
+     ]
+     set numberOfRocks (numberOfRocks + (clusterRocks * 5))
    
-   ;;3) Each robot has its own memory of what mode it is in.
-   ;;Set them to start in search mode.
-   ;;Set search mode to true, and set all other modes to false.
- 
    
-   
-   
- ;; 4) Let's create some clusters of rocks. Each cluster has 9 rocks.
- ;; We'll use the slider value for clusters to determine how many clusters to create.
- ;; In Mars Robot 1, we asked 10 random patches to place clusters.
- ;; We didn't ask the patch its color first.
- ;; If the patch was black (off-planet or trench), we didn't place the cluster, but the attempt still counted. 
- ;; In this way, we could get a different amount every time, because some black patches were usually tested.
- ;; In Mars Robot 2, we ask only the patches that are not black to place clusters.
- ;; In this way, we make sure the exact amount of clusters on our slider shows up in the
- ;; program.
-   
-  
-  
-   
- ;; 5) Now we'll place some single rocks.
- ;; We'll use the slider value for singles to determine how many single rocks to create.
- ;; We need to ask only patches that can hold a rock to place a rock, so the pcolor can't be black.
- ;; Since we already placed some clusters of rocks, we don't want to put a rock on top of another rock.
- ;; Make sure to check that the pcolor is not yellow too.
- 
- 
-  
    ;;This code makes a base for the robot to return to when it finds a rock.
    ;;We'll center the base at the origin (0,0), and make it a circle with radius 3.
    ;;Let's color it green.
@@ -100,12 +119,11 @@
      ]
    ]                      
                                         
-  
   ;;reset ticks to 0
   reset-ticks
-   
- end
 
+ end
+ 
  ;------------------------------------------------------------------------------------
  ;;;;;;;;;;;;;;;;;;;;;
  ;;       Go        ;;
@@ -113,36 +131,37 @@
  to go
    
    ;;run the program until all rocks are collected
-   while [ numberOfRocks > 0 ]  
+   if (numberOfRocks > 0)
    [
-     ask turtles
+     ask robots
      [
-   
-       ;;1) if a robot is searching? it should look-for-rocks
+       ;;2) ask the robots if they are using site fidelity and searching or not
+       ifelse searching? 
+       [look-for-rocks]
+       [return-to-base]
        
-   
-       ;;2) if a robot is returning? it should return-to-base
-     
-       
-       ;;3) if a robot is recruited? it should move-to-friend
-      
-       
-       ;;4) if a robot is recruiting? it should call-friends
-     
-       
-       
-       
-       ;;make the robots move and avoid the world's edge 
-       if [pcolor] of patch-ahead 1 = black 
-       [ set heading (heading + 180) ]
+       ;;1) make the robots move
        wiggle
-       
+     ]   
+   ]
+   ;;advance the clock
+   tick
+   
+   if not any? patches with [pcolor = yellow][
+     set numberOfRocks 0
+     ask robots[
+       set searching? false
+       while [pcolor != green][
+         return-to-base
+         fd 1
+       ]
      ]
-     ;;advance the clock
-     tick
+     stop
    ]
   
  end
+ 
+ 
  
  ;------------------------------------------------------------------------------------
  ;;;;;;;;;;;;;;;;;;;;
@@ -151,74 +170,46 @@
     
  to wiggle
    
-   ;;shift right 0 - 40 degrees     
-   right random 40
+   ;; 1) turn right 0 - maxAngle degrees     
+   right random maxAngle
+          
+   ;; 2) turn left 0 - maxAngle degrees
+   left random maxAngle
    
-              
-   ;;shift left 0 - 40 degrees
-   left random 40
-   
-   
-   ;;go forward one patch
+   ;; 3) turn around and face the origin if we hit the edge of the planet 
+   ;; (the patch color is black at the edge of the planet)
+   if pcolor = black [ facexy 0 0 ]
+
+   ;; 4) go forward one patch
    forward 1
-   
+  
  end
  
-  ;------------------------------------------------------------------------------------
+ 
+ ;------------------------------------------------------------------------------------
  ;;;;;;;;;;;;;;;;;;;;
  ;; look-for-rocks ;;
  ;;;;;;;;;;;;;;;;;;;;
  
  to look-for-rocks
    
-   
-   ;;reset label
-   set label ""
- 
-     ;;In Mars Robot 1, robots had sensors that allowed them to "see" in 360 degrees
-     ;;around themselves.
-     ;;These robots are set to only see one patch ahead to speed them up.
-     ;;When they find a rock, then they will stop and check all around them, and
-     ;;call friends if there are more rocks. 
-     ;;In this way, the robots must work together to find rocks.
-    
+   ;;1) Ask the 8 patches around the robot if the patch color is yellow
+   ask neighbors[
+     if pcolor = yellow[
+   ;;2) If it is, take one rock away, and set search mode to false.
+   ;;   Change the patch color to the original color where we removed the rock.
+   ;;   Have the robot ask itself to turn off searching and set its shape to 
+   ;;   the one holding a rock.
+       set pcolor baseColor
+       set numberOfRocks (numberOfRocks - 1)  
+       ask myself [
+         set searching? false
+         set shape "robot with rock"
+         ]
+        ]
+       ]
+
        
-       ;;1)If the patch color of patch-ahead 1 is yellow,
-       
-       
-         ;;2)then pick up the rock (reduce the numberOfRocks by 1), 
-         ;;change the agent model to the robot holding the rock, and reset the patch to red
-      
-       
-         ;;3)Turn search mode off.
-      
-            
-         ;;4)Create 2 variables, turnOnRecruiting? and turnOnReturning?
-         ;;and set them to false.
-         ;;We have to do this because we need to check some things from a patch context.
-      
-       
-         ;;5) Ask the patches 360 degrees around us
-         
-           ;;6) Use an ifelse statement.
-           ;;If the patch is yellow (a rock), we want to tell closeby robots
-           ;;that there are rocks here on the next step (recruit them). 
-           ;;turnOnRecruiting by setting its value to true.
-        
-        
-           ;;7) else there's no more rocks here. 
-           ;;We don't need to recruit, we need to return.
-           ;;turnOnReturning by setting its calue to true.
-        
-         
-         ;;8) We're done testing patches.
-         ;;Set the value of recruiting? to the value of 
-         ;;turnOnRecruiting? and
-         ;;set the value of returning? to the value of
-         ;;turnOnReturning?
-         
-    
-  
  end   
  
  ;------------------------------------------------------------------------------------
@@ -227,98 +218,26 @@
  ;;;;;;;;;;;;;;;;;;;;
  
  to return-to-base
-
- ;;reset label
- set label ""
    
- ;;If the patch color is green, we found the base.
-   ifelse pcolor = green
-   [
- 
- ;;Change the robot's shape to the one without the rock,
-     set shape "robot"
-     
- 
- ;;!!!) Turn off returning mode, and turn on searching mode.
-
-  
-   ]                            
- ;;otherwise, we didn't find the base yet--face the base
-   [ facexy 0 0 ]
+ ;;1) If the patch color is green, we found the base.
+ ifelse pcolor = green
+   
+ ;;2) Change the robot's shape to the one without the rock,
+ ;;   and start searching again.
+  [
+  set shape "robot"
+  set searching? true
+  ]
+                             
+ ;;3) Else, we didn't find the base yet--face the base
+  [facexy 0 0 ]
  
  end
- 
-  
- ;------------------------------------------------------------------------------------
- ;;;;;;;;;;;;;;;;;;;;
- ;;  call-friends  ;;
- ;;;;;;;;;;;;;;;;;;;;
- 
- to call-friends
-   
-   ;;reset label
-   set label ""
-   
-   ;;1) Set the global location variables to the robot's current position 
-   ;;to tell recruited? robots where to go.
-   ;;This is like uploading some coordinates to a satellite.
-  
-  
-   
-   ;;2)Ask the robots (turtles) in the recruiting radius
-  
-  
-     ;;3) if they are searching?
-     
-       
-       ;;4) Turn off searching mode and turn on recruited mode,
-      
-       
-        
-       ;;5) and set their turtles-own coords to the global rock location coords so they'll
-       ;;head in that direction.
-       ;;This is like getting the destination coordinates from a satellite.
-   
-   
-   
-   ;;6) The robot finished recruiting.
-   ;;Turn off recruiting mode, and turn on returning mode
-   ;;so it drops off the rock it is holding.
-  
-   
- end
- 
- 
- ;------------------------------------------------------------------------------------
- ;;;;;;;;;;;;;;;;;;;;;
- ;;  move-to-friend ;;
- ;;;;;;;;;;;;;;;;;;;;;
- to move-to-friend
-   
-   ;;label the robot as recruited
-   set label "recruited"
-   
-   ;;1) Make an ifelse statement.
-   ;;If our target coordinate is our current coordinate, 
-   
-   
-   
-     ;;2) We reached our destination.
-     ;;Turn off recruited mode.
-     ;;Turn on searching mode so we detect the nearby rocks. 
- 
- 
- 
-   ;;3) else face the target coordinates
-   
-   
- end
- 
 @#$#@#$#@
 GRAPHICS-WINDOW
-210
+307
 10
-823
+920
 644
 100
 100
@@ -341,6 +260,111 @@ GRAPHICS-WINDOW
 1
 ticks
 30.0
+
+BUTTON
+122
+11
+188
+44
+setup
+setup
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+BUTTON
+124
+57
+187
+90
+go
+go
+T
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+SLIDER
+17
+102
+189
+135
+numberOfRobots
+numberOfRobots
+1
+20
+6
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+19
+206
+191
+239
+singleRocks
+singleRocks
+0
+100
+50
+5
+1
+NIL
+HORIZONTAL
+
+SLIDER
+20
+248
+192
+281
+clusterRocks
+clusterRocks
+0
+50
+25
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+18
+143
+190
+176
+maxAngle
+maxAngle
+0
+90
+45
+5
+1
+NIL
+HORIZONTAL
+
+MONITOR
+79
+306
+192
+351
+rocks remaining
+numberOfRocks
+17
+1
+11
 
 @#$#@#$#@
 ## WHAT IS IT?
