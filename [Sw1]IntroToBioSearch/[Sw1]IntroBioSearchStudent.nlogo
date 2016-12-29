@@ -38,6 +38,9 @@
    ;;Import the background image of Mars
    bitmap:copy-to-pcolors bitmap:import "mars.jpg" true
    
+   ;;Patches remember their starting color
+   ask patches [set baseColor pcolor]
+   
    
    ;;1) Set the global numberOfRocks to 0 to start 
    
