@@ -16,12 +16,13 @@
  extensions[ bitmap ]
  
  ;;We need to keep track of how many rocks are left to gather, and if our robot is looking for a rock.
- globals
- [ 
-   numberOfRocks           ;;total number of rocks to gather on the grid
-   searching?              ;;keeps track of if a robot is currently searching for a rock
- ]
+ globals [ numberOfRocks ]         ;;total number of rocks to gather on the grid
+
+;;We need each robot to know some information about itself.
+ robots-own [searching?]           ;;robots need to know if they are in the searching state.
  
+ ;;Patches need to know what color they started as.
+ patches-own [baseColor]
  
  
  ;--------------------------------------------------------------------------------------
@@ -38,35 +39,35 @@
    bitmap:copy-to-pcolors bitmap:import "mars.jpg" true
    
    
-   ;;1) Set numberOfRocks to 0 to start 
+   ;;1) Set the global numberOfRocks to 0 to start 
    
-   
-   ;;2) Set robots to start in search mode
-   
-   
-   ;;3) Here we create a robot. NetLogo's default shape for an agent is a turtle, though,
-   ;;so change its shape from a turtle to a robot.
+     
+   ;;2) Here we create some robots. NetLogo's default shape for an agent is a turtle, though,
+   ;;so change their shape from a turtle to a robot.
    ;;Set its size to 8, so you can see it more clearly.
+   
+   
+   ;;3) Set robots to start in search mode
  
-   
-   ;;4) Let's set a maximum of 25 random patches to the color yellow. 
-   ;; pcolor means patch color.
-   ;;The yellow patches will represent the rocks that we are gathering.
-   ;;We don't want to make rocks that are off the planet, so we check if the random
-   ;;patch selected is black. We won't put a rock there if it is. 
-   ;; != means 'does not equal'.
-   ;;When we add a rock, we also add 1 to the numberOfRocks variable to keep track of how
-   ;;many rocks we have.
-   
 
-   ;;5) Let's make a maximum of 10 additional clusters of rocks for the robot to pick up.
-   ;;We don't want to make rocks that are off the planet, so we check for black patches like before. 
-   ;;This time we also check for yellow patches, because we don't want to put a rock on top of
-   ;;another rock.
-   ;;If the randomly selected patch is not black and not yellow, then we make it yellow (add a rock)
-   ;;and add 1 to our numberOfRocks variable like before.
-   ;;This time, we ask the patches to the North, South, East, and West to become rocks also and add
-   ;;those to the variable numberOfRocks.
+   ;;4) Let's set some random patches to the color yellow to represent rocks. 
+   ;; We'll get the number of random patches from the slider singleRocks.
+   ;; pcolor means patch color.
+   ;; We don't want to make rocks that are off the planet, so we check if the random
+   ;; patch selected is black. We won't put a rock there if it is. We also don't want to add
+   ;; a rock right on top of another rock, so we'll check that too.
+   ;; != means 'does not equal'.
+   ;; We also need to update our global variable numberOfRocks to keep track of 
+   ;; how many rocks we have. We do this after adding the rocks.
+
+
+   ;;5) Now, let's make some clusters of rocks for the robot to pick up.
+   ;; We'll get the number of clusters from the slider clusterRocks.
+   ;; We don't want to make rocks in an illegal place, so we check for black and yellow patches like before. 
+   ;; This time we must also ask the patches to the North, South, East, and West of our target patch to become 
+   ;; rocks also and add but only if they are not off-world or already rocks.
+   ;; Update numberOfRocks again.
+   
    
    
    ;;This code makes a base for the robot to return to when it finds a rock.
@@ -92,7 +93,7 @@
  to go
    
    ;;run the program until all rocks are collected
-   if [count patches with [pcolor = yellow] > 0]  
+   if (numberOfRocks > 0)
    [
      ask robots
      [
@@ -107,11 +108,16 @@
     
        ;;1) make the robots move
        
-       
      ]
+            
+   ]
      ;;advance the clock
      tick
-   ]
+  
+  if not any? patches with [pcolor = yellow][
+    set numberOfRocks 0
+    stop
+    ]
   
  end
  
@@ -151,14 +157,13 @@
    
    
    ;;2) If it is, take one rock away, and set search mode to false.
-   ;;   Change the patch color to red where we removed the rock.
-         
-       
-   ;;3) If they're not searching anymore, that means they found a rock.
-   ;;Change the robot's shape to the one holding a rock.
+   ;;   Change the patch color to the original color where we removed the rock.
+   ;;   Have the robot ask itself to turn off searching and set its shape to 
+   ;;   the one holding a rock.
    
 
  end   
+ 
  
  ;------------------------------------------------------------------------------------
  ;;;;;;;;;;;;;;;;;;;;
@@ -168,16 +173,13 @@
  to return-to-base
    
  ;;1) If the patch color is green, we found the base.
-   
+ 
    
  ;;2) Change the robot's shape to the one without the rock,
-       
- 
- ;;3) and start searching again.
-  
+ ;;   and start searching again.
+
                              
- ;;4)otherwise, we didn't find the base yet--face the base
-  
+ ;;3) Else, we didn't find the base yet--face the base
  
  end
  
