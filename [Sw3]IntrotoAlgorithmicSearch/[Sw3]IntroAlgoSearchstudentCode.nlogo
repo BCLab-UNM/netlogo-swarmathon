@@ -1,249 +1,213 @@
  ;; Elizabeth E. Esterly
  ;; elizabeth@cs.unm.edu
  ;; The University of New Mexico
- ;; Swarmathon 2: Advanced Bio-Inspired Search
- ;; Last Revision 12/29/2016
-
- ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
- ;;    Globals and Properties    ;;
- ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
- ;----------------------------------------------------------------------------------------------
+ ;; Swarmathon 3: Introduction to Deterministic Search
+ ;; Last Revision 01/02/2016
  
- ;;The default agent in Netlogo is a turtle. We want to use robots! 
- breed [robots robot]
  
- ;;Let's load the bitmap extension to use a Mars planet background.
- extensions[ bitmap ]
- 
- ;;We need to keep track of how many rocks are left to gather, and if our robot is looking for a rock.
- globals [ numberOfRocks ]         ;;total number of rocks to gather on the grid
-
-;;We need each robot to know some information about itself.
- robots-own [
-   searching?                      ;;robots need to know if they are in the searching state.
-   
-   ]           
- 
- ;;We need each patch to know some information about itself.
- patches-own [
-   baseColor                       ;;Patches need to know what color they started as.
-   
-   ]
- 
+  breed [robots robot]
+  robots-own [
+    processingList?
+    returning?
+    rockLocations
+    locX
+    locY
+    directions
+    ]
   
+  patches-own [baseColor]
+  extensions [array]
+
+to setup
+  general-setup
+  make-cross
+  ask patches[
+    if distancexy 0 0 < 4[set pcolor green] ;;make the base
+    ]
+end
+
+to make-cross
+  general-setup
+  ask patches [
+    ifelse pxcor mod 101 = 0 or pycor mod 101 = 0
+      [ set pcolor yellow ]
+      [ set pcolor gray ]
+  ]                   
+end
+
+to make-random
+  let numRand 30
+  while [numRand > 0][
+    ask n-of 30 patches with [pcolor != yellow][
+      set pcolor yellow
+      set numRand numRand - 1
+    ]
+  ]
+end
+
+to general-setup
+  ca
+  cp
+  ask patches [
+    set pcolor gray
+    set baseColor pcolor
+    ]
+  make-robots
+end
+
+to make-robots
+   create-robots 1[
+    set size 5
+    set shape "robot"
+    set processingList? false
+    set returning? false
+    set rockLocations [] 
+    set locX "none"
+    set locY "none"
+    set heading 0 ;start with north
+    set directions (list 180 90 270) ;south east west
+   ]
+end
+
+
+;------------------------------------------------------------------------------------
+ ;;;;;;;;;;;;;;;;;
+ ;;    DFS      ;;
+ ;;;;;;;;;;;;;;;;;
  
- ;--------------------------------------------------------------------------------------
- ;;;;;;;;;;;;;;;;;;;;;;;;;;;
- ;;       Setup           ;;
- ;;;;;;;;;;;;;;;;;;;;;;;;;;;
- 
- to setup 
-                  
-   ;;Clear all the data for a fresh start
-   clear-all
-   
-   ;;Import the background image of Mars
-   bitmap:copy-to-pcolors bitmap:import "mars.jpg" true
-   
-   ;;Patches remember their starting color
-   ask patches [set baseColor pcolor]
-   
-   ;;1) Set the global numberOfRocks to 0 to start 
-   set numberOfRocks 0
+to DFS 
+  if processingList? and empty? rockLocations[ ;;Done processing list. Get  back to DFS or stop if no directions remain.
+    ifelse empty? directions
+    [
+      ifelse count patches with [pcolor = yellow] > 0 [move-to-loc] ;;get the last rock
+      [stop]
+      ] 
+    [set-direction] ;if we have directions left, process them
+     ;;;have to get the last one out of its memory first
+    set processingList? false
+    ]
   
-     
-   ;;2) Here we create some robots. NetLogo's default shape for an agent is a turtle,
-   ;;so change their shape from a turtle to a robot.
-   ;;Set its size to 8, so you can see it more clearly.
-   create-robots numberOfRobots [
-     set shape "robot"
-     set size 8
-   ]
-   
-   ;;3) Set robots to start in search mode
-   ;;  also set robots to start without site fidelity,
-   ;;  and set the site fidelity coordinates to the origin.
-   ask robots [
-     set searching? true
-     ]
+  if not can-move? 1 [
+    do-DFS ;;add the last rock to our list if it's there
+    set processingList? true ;;now process our list
+    ] ;;we've reached a boundary, start processing the list
 
-   ;;4) Let's set some random patches to the color yellow to represent rocks. 
-   ;; We'll get the number of random patches from the slider singleRocks.
-   ;; pcolor means patch color.
-   ;; We don't want to make rocks that are off the planet, so we check if the random
-   ;; patch selected is black. We won't put a rock there if it is. We also don't want to add
-   ;; a rock right on top of another rock, so we'll check that too.
-   ;; != means 'does not equal'.
-   ;; Let's update our global variable numberOfRocks to keep track of 
-   ;; how many rocks we have. We do this after adding the rocks.
-   let targetPatches singleRocks
-     while [targetPatches > 0][
-       ask one-of patches[
-         if pcolor != black and pcolor != yellow[
-           set pcolor yellow
-           set targetPatches targetPatches - 1
-         ]
-       ]
-     ]
-     set numberOfRocks (numberOfRocks + singleRocks)
+  ifelse (processinglist? or returning?)
+  [process-list]
+  [do-DFS]
+end
 
 
-   ;;5) Now, let's make some clusters of rocks for the robot to pick up.
-   ;; We'll get the number of clusters from the slider clusterRocks.
-   ;; We don't want to make rocks in an illegal place, so we check for black and yellow patches like before. 
-   ;; This time we must also ask the patches to the North, South, East, and West of our target patch to become 
-   ;; rocks also and add but only if they are not off-world or already rocks.
-   ;; Update numberOfRocks again.
-   set targetPatches (clusterRocks * 5)
-     while [targetPatches > 0][
-       ask one-of patches[
-         if pcolor != black and pcolor != yellow 
-            and [pcolor] of neighbors4 != black and [pcolor] of neighbors4 != yellow[
-           set pcolor yellow
-           ask neighbors4[ set pcolor yellow ]
-           set targetPatches targetPatches - 5
-         ]
-       ]
-     ]
-     set numberOfRocks (numberOfRocks + (clusterRocks * 5))
-   
-   
-   ;;This code makes a base for the robot to return to when it finds a rock.
-   ;;We'll center the base at the origin (0,0), and make it a circle with radius 3.
-   ;;Let's color it green.
-   ask patches
-   [
-     if distancexy 0 0 < 4 ;;if the distance from the origin is less than 4
-     [
-       set pcolor green    ;;color the patches there green
-     ]
-   ]                      
-                                        
-  ;;reset ticks to 0
-  reset-ticks
+;------------------------------------------------------------------------------------
+ ;;;;;;;;;;;;;;;;;
+ ;; do-DFS      ;;
+ ;;;;;;;;;;;;;;;;;
 
- end
+to do-DFS
+  let location []
+  ask patch-here[
+    if pcolor = yellow[
+      set location (list pxcor pycor)
+      ask robots [
+        set rockLocations remove-duplicates (fput location rockLocations)
+      ]
+      ]
+  ]
+  fd 1
+end
+
+;------------------------------------------------------------------------------------
+ ;;;;;;;;;;;;;;;;;
+ ;; process-list ;;
+ ;;;;;;;;;;;;;;;;;
+
+to process-list
+  if (locX = "none" and locY = "none")[ ;kickoff OK-- also these are reset to "none" in ret-to-base--check now for empty list
+    reset-target-coords
+  ]
+  ifelse returning? 
+  [return-to-base]
+  [move-to-loc]
+  fd 1
+end
+
+
+;------------------------------------------------------------------------------------
+ ;;;;;;;;;;;;;;;;;
+ ;; move-to-loc ;;
+ ;;;;;;;;;;;;;;;;;
  
- ;------------------------------------------------------------------------------------
- ;;;;;;;;;;;;;;;;;;;;;
- ;;       Go        ;;
- ;;;;;;;;;;;;;;;;;;;;;
- to go
-   
-   ;;run the program until all rocks are collected
-   if (numberOfRocks > 0)
-   [
-     ask robots
-     [
-       ;;2) ask the robots if they are using site fidelity and searching or not
-       ifelse searching? 
-       [look-for-rocks]
-       [return-to-base]
-       
-       ;;1) make the robots move
-       wiggle
-     ]   
+to move-to-loc
+  ifelse (pxcor = locX and pycor = locY)
+  [
+    ;robot arrived at location
+    set shape "robot with rock" ;pick up the rock
+    ask patch-here [set pcolor baseColor]
+    set returning? true 
    ]
-   ;;advance the clock
-   tick
-   
-   if not any? patches with [pcolor = yellow][
-     set numberOfRocks 0
-     ask robots[
-       set searching? false
-       while [pcolor != green][
-         return-to-base
-         fd 1
-       ]
-     ]
-     stop
-   ]
-  
+  ;robot has not arrived yet, face the location
+  [facexy locX locY]
  end
  
  
  
- ;------------------------------------------------------------------------------------
- ;;;;;;;;;;;;;;;;;;;;
- ;;    wiggle      ;;
- ;;;;;;;;;;;;;;;;;;;;
-    
- to wiggle
-   
-   ;; 1) turn right 0 - maxAngle degrees     
-   right random maxAngle
-          
-   ;; 2) turn left 0 - maxAngle degrees
-   left random maxAngle
-   
-   ;; 3) turn around and face the origin if we hit the edge of the planet 
-   ;; (the patch color is black at the edge of the planet)
-   if pcolor = black [ facexy 0 0 ]
-
-   ;; 4) go forward one patch
-   forward 1
-  
- end
- 
- 
- ;------------------------------------------------------------------------------------
- ;;;;;;;;;;;;;;;;;;;;
- ;; look-for-rocks ;;
- ;;;;;;;;;;;;;;;;;;;;
- 
- to look-for-rocks
-   
-   ;;1) Ask the 8 patches around the robot if the patch color is yellow
-   ask neighbors[
-     if pcolor = yellow[
-   ;;2) If it is, take one rock away, and set search mode to false.
-   ;;   Change the patch color to the original color where we removed the rock.
-   ;;   Have the robot ask itself to turn off searching and set its shape to 
-   ;;   the one holding a rock.
-       set pcolor baseColor
-       set numberOfRocks (numberOfRocks - 1)  
-       ask myself [
-         set searching? false
-         set shape "robot with rock"
-         ]
-        ]
-       ]
-
-       
- end   
- 
- ;------------------------------------------------------------------------------------
+;------------------------------------------------------------------------------------
  ;;;;;;;;;;;;;;;;;;;;
  ;; return-to-base ;;
  ;;;;;;;;;;;;;;;;;;;;
  
  to return-to-base
    
- ;;1) If the patch color is green, we found the base.
- ifelse pcolor = green
+ ;;1) If the patch color is green, we found the base. Must go to the origin for rocks to work
+ ifelse pcolor = green and (pxcor = 0 and pycor = 0)
    
  ;;2) Change the robot's shape to the one without the rock,
  ;;   and start searching again.
   [
   set shape "robot"
-  set searching? true
+  set returning? false
+  set locX "none"
+  set locY "none"
   ]
                              
  ;;3) Else, we didn't find the base yet--face the base
   [facexy 0 0 ]
  
  end
+
+;------------------------------------------------------------------------------------
+ ;;;;;;;;;;;;;;;;;;;;;;;;;
+ ;; reset-target-coords ;;
+ ;;;;;;;;;;;;;;;;;;;;;;;;;
+ 
+to reset-target-coords
+  if not empty? rockLocations[
+    let loc first rockLocations   ;;grab first element of list, which is a list of 2 coords, x and y
+    show loc
+    set locX first loc ;;now set robots-own x
+    set locY last loc ;;and robots-own y
+    set rockLocations but-first rockLocations ;keep everything but the first
+  ]
+end
+
+to set-direction
+  if not empty? directions[
+    set heading first directions
+    set directions but-first directions
+    show directions
+  ]
+end
 @#$#@#$#@
 GRAPHICS-WINDOW
-219
+210
 10
-832
-644
-100
-100
+523
+344
+50
+50
 3.0
 1
-14
+10
 1
 1
 1
@@ -251,10 +215,10 @@ GRAPHICS-WINDOW
 0
 0
 1
--100
-100
--100
-100
+-50
+50
+-50
+50
 0
 0
 1
@@ -262,10 +226,10 @@ ticks
 30.0
 
 BUTTON
-122
-11
-188
-44
+128
+12
+195
+46
 setup
 setup
 NIL
@@ -279,89 +243,29 @@ NIL
 1
 
 BUTTON
-124
-57
-187
-90
-go
-go
+133
+64
+197
+98
+DFS
+DFS
 T
 1
 T
-OBSERVER
+TURTLE
 NIL
 NIL
 NIL
 NIL
 1
-
-SLIDER
-17
-102
-189
-135
-numberOfRobots
-numberOfRobots
-1
-20
-6
-1
-1
-NIL
-HORIZONTAL
-
-SLIDER
-19
-206
-191
-239
-singleRocks
-singleRocks
-0
-100
-50
-5
-1
-NIL
-HORIZONTAL
-
-SLIDER
-20
-248
-192
-281
-clusterRocks
-clusterRocks
-0
-50
-25
-1
-1
-NIL
-HORIZONTAL
-
-SLIDER
-18
-143
-190
-176
-maxAngle
-maxAngle
-0
-90
-45
-5
-1
-NIL
-HORIZONTAL
 
 MONITOR
-79
-306
-192
-351
+83
+114
+197
+159
 rocks remaining
-numberOfRocks
+count patches with [pcolor = yellow]
 17
 1
 11
