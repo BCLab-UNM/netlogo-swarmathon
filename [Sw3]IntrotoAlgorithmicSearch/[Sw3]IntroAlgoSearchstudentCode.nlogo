@@ -2,60 +2,54 @@
  ;; elizabeth@cs.unm.edu
  ;; The University of New Mexico
  ;; Swarmathon 3: Introduction to Deterministic Search
- ;; Last Revision 01/02/2016
+ ;; Last Revision 01/03/2016
  
- 
+ ;;use robots instead of turtles
   breed [robots robot]
+  
+  ;;robots need to know:
   robots-own [
-    processingList?
-    returning?
-    rockLocations
-    locX
-    locY
-    directions
+    processingList?  ;;are they currently working with a list of rock locations?
+    returning?       ;;are they currently returning to the base?
+    rockLocations    ;;store a list of rocks we have seen
+    locX             ;;target coordinate x
+    locY             ;;target coordinate y
+    directions       ;;list of cardinal directions for the robot to explore
     ]
   
-  patches-own [baseColor]
-  extensions [array]
+  ;;patches need to know:
+  patches-own [baseColor]  ;;color before adding rocks
 
+
+
+;------------------------------------------------------------------------------------
+ ;;;;;;;;;;;;;;;;;;
+ ;;    setup     ;;
+ ;;;;;;;;;;;;;;;;;;
+ 
+ ;practice organizing core into main procedures and sub procedures
 to setup
-  general-setup
+  ca
+  cp
+  reset-ticks
   make-cross
-  ask patches[
-    if distancexy 0 0 < 4[set pcolor green] ;;make the base
-    ]
+  make-robot
+  make-base
 end
 
+;place rocks in a cross
 to make-cross
-  general-setup
   ask patches [
+    set pcolor gray
+    set baseColor pcolor
     ifelse pxcor mod 101 = 0 or pycor mod 101 = 0
       [ set pcolor yellow ]
       [ set pcolor gray ]
   ]                   
 end
 
-to make-random
-  let numRand 30
-  while [numRand > 0][
-    ask n-of 30 patches with [pcolor != yellow][
-      set pcolor yellow
-      set numRand numRand - 1
-    ]
-  ]
-end
-
-to general-setup
-  ca
-  cp
-  ask patches [
-    set pcolor gray
-    set baseColor pcolor
-    ]
-  make-robots
-end
-
-to make-robots
+;create a robot and set its properties and robots-own variables
+to make-robot
    create-robots 1[
     set size 5
     set shape "robot"
@@ -69,6 +63,13 @@ to make-robots
    ]
 end
 
+;make a base at the origin
+to make-base
+  ask patches[
+    if distancexy 0 0 < 4[set pcolor green] ;;make the base
+    ]
+end
+
 
 ;------------------------------------------------------------------------------------
  ;;;;;;;;;;;;;;;;;
@@ -76,7 +77,7 @@ end
  ;;;;;;;;;;;;;;;;;
  
 to DFS 
-  if processingList? and empty? rockLocations[ ;;Done processing list. Get  back to DFS or stop if no directions remain.
+  if processingList? and empty? rockLocations[ ;;Done processing list. Go back to DFS or stop if no directions remain.
     ifelse empty? directions
     [
       ifelse count patches with [pcolor = yellow] > 0 [move-to-loc] ;;get the last rock
@@ -87,10 +88,11 @@ to DFS
     set processingList? false
     ]
   
+  ;we've reached a boundary, start processing the list
   if not can-move? 1 [
     do-DFS ;;add the last rock to our list if it's there
-    set processingList? true ;;now process our list
-    ] ;;we've reached a boundary, start processing the list
+    set processingList? true ;;tell the robot to start processing their list
+    ] ;
 
   ifelse (processinglist? or returning?)
   [process-list]
@@ -117,9 +119,9 @@ to do-DFS
 end
 
 ;------------------------------------------------------------------------------------
- ;;;;;;;;;;;;;;;;;
+ ;;;;;;;;;;;;;;;;;;
  ;; process-list ;;
- ;;;;;;;;;;;;;;;;;
+ ;;;;;;;;;;;;;;;;;;
 
 to process-list
   if (locX = "none" and locY = "none")[ ;kickoff OK-- also these are reset to "none" in ret-to-base--check now for empty list
