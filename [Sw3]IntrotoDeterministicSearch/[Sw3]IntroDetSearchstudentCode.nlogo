@@ -116,6 +116,7 @@ to DFS
    
    ;;Else, do DFS.
    
+   
   ]
   tick ;;tick must be called from observer context--place outside the ask robots block.
 end
