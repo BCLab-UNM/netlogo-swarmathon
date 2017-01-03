@@ -4,7 +4,7 @@
  ;; Swarmathon 3: Introduction to Deterministic Search
  ;; Last Revision 01/03/2016
  
- ;;use robots instead of turtles
+  ;;use robots instead of turtles
   breed [robots robot]
   
   ;;robots need to know:
@@ -27,25 +27,14 @@
  ;;    setup     ;;
  ;;;;;;;;;;;;;;;;;;
  
- ;practice organizing core into main procedures and sub procedures
+ ;organize your code into main procedures and sub procedures
 to setup
-  ca
-  cp
-  reset-ticks
-  make-cross
+  ca ;clear all
+  cp ;clear patches
+  reset-ticks ;keep track of simulation runtime
   make-robot
+  make-cross
   make-base
-end
-
-;place rocks in a cross
-to make-cross
-  ask patches [
-    set pcolor gray
-    set baseColor pcolor
-    ifelse pxcor mod 101 = 0 or pycor mod 101 = 0
-      [ set pcolor yellow ]
-      [ set pcolor gray ]
-  ]                   
 end
 
 ;create a robot and set its properties and robots-own variables
@@ -63,6 +52,18 @@ to make-robot
    ]
 end
 
+;place rocks in a cross
+to make-cross
+  ask patches [
+    set pcolor gray
+    set baseColor pcolor
+    let doublemax max-pxcor * 2
+    ifelse pxcor mod doublemax = 0 or pycor mod doublemax = 0
+      [ set pcolor yellow ]
+      [ set pcolor gray ]
+  ]                   
+end
+
 ;make a base at the origin
 to make-base
   ask patches[
@@ -77,26 +78,32 @@ end
  ;;;;;;;;;;;;;;;;;
  
 to DFS 
-  if processingList? and empty? rockLocations[ ;;Done processing list. Go back to DFS or stop if no directions remain.
-    ifelse empty? directions
-    [
-      ifelse count patches with [pcolor = yellow] > 0 [move-to-loc] ;;get the last rock
-      [stop]
-      ] 
-    [set-direction] ;if we have directions left, process them
-     ;;;have to get the last one out of its memory first
-    set processingList? false
-    ]
-  
-  ;we've reached a boundary, start processing the list
-  if not can-move? 1 [
-    do-DFS ;;add the last rock to our list if it's there
-    set processingList? true ;;tell the robot to start processing their list
-    ] ;
-
-  ifelse (processinglist? or returning?)
-  [process-list]
-  [do-DFS]
+  ;;All sub procedures called here (set-direction, do-DFS, process-list) are called within the ask robots block.
+  ;;This means that the procedures act as if they are already in ask robots--you don't need to repeat it. 
+  if count patches with [pcolor = yellow] = 0 [stop]
+  ask robots[
+   if processingList? and empty? rockLocations[ ;;Done processing list. Go back to DFS or stop if no directions remain.
+     ifelse empty? directions
+     [
+       if count patches with [pcolor = yellow] > 0 
+       [move-to-loc] ;;get the last rock
+       ] 
+     [set-direction] ;if we have directions left, process them
+      ;;;have to get the last one out of its memory first
+     set processingList? false
+     ]
+   
+   ;We've reached a boundary. Start processing the list.
+   if not can-move? 1 [
+     do-DFS ;;add the last rock to our list if it's there
+     set processingList? true ;;Tell the robot to start processing the list.
+     ] 
+ 
+   ifelse (processinglist? or returning?)
+   [process-list]
+   [do-DFS]
+  ]
+  tick ;;tick must be called from observer context--place outside the block.
 end
 
 
@@ -185,7 +192,6 @@ to move-to-loc
 to reset-target-coords
   if not empty? rockLocations[
     let loc first rockLocations   ;;grab first element of list, which is a list of 2 coords, x and y
-    show loc
     set locX first loc ;;now set robots-own x
     set locY last loc ;;and robots-own y
     set rockLocations but-first rockLocations ;keep everything but the first
@@ -196,7 +202,6 @@ to set-direction
   if not empty? directions[
     set heading first directions
     set directions but-first directions
-    show directions
   ]
 end
 @#$#@#$#@
@@ -254,7 +259,7 @@ DFS
 T
 1
 T
-TURTLE
+OBSERVER
 NIL
 NIL
 NIL
