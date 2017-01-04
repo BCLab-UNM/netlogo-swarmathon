@@ -2,7 +2,7 @@
  ;; elizabeth@cs.unm.edu
  ;; The University of New Mexico
  ;; Swarmathon 2: Advanced Bio-Inspired Search
- ;; Last Revision 12/29/2016
+ ;; Last Revision 01/04/2016
 
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  ;;    Globals and Properties    ;;

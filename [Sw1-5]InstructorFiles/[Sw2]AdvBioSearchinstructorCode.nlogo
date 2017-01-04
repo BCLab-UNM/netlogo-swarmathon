@@ -1,8 +1,12 @@
+;----------------------------------------------------------------------------------------------
+ ;; INSTRUCTOR FILE
+ ;----------------------------------------------------------------------------------------------
+
  ;; Elizabeth E. Esterly
  ;; elizabeth@cs.unm.edu
  ;; The University of New Mexico
  ;; Swarmathon 2: Advanced Bio-Inspired Search
- ;; Last Revision 12/29/2016
+ ;; Last Revision 01/04/2016
 
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  ;;    Globals and Properties    ;;
@@ -21,12 +25,13 @@
 ;;We need each robot to know some information about itself.
  robots-own [
    searching?                      ;;robots need to know if they are in the searching state.
-   
+   usingPheromone?
    ]           
  
  ;;We need each patch to know some information about itself.
  patches-own [
    baseColor                       ;;Patches need to know what color they started as.
+   pheromoneCounter
    
    ]
  
@@ -65,6 +70,7 @@
    ;;  and set the site fidelity coordinates to the origin.
    ask robots [
      set searching? true
+     set usingPheromone? false
      ]
 
    ;;4) Let's set some random patches to the color yellow to represent rocks. 
@@ -98,9 +104,9 @@
      while [targetPatches > 0][
        ask one-of patches[
          if pcolor != black and pcolor != yellow 
-            and [pcolor] of neighbors4 != black and [pcolor] of neighbors4 != yellow[
+            and [pcolor] of neighbors != black and [pcolor] of neighbors != yellow[
            set pcolor yellow
-           ask neighbors4[ set pcolor yellow ]
+           ask neighbors[ set pcolor yellow ]
            set targetPatches targetPatches - 5
          ]
        ]
@@ -135,7 +141,7 @@
    [
      ask robots
      [
-       ;;2) ask the robots if they are using site fidelity and searching or not
+       ;;2) ask the robots if they are using pheromone and searching or not
        ifelse searching? 
        [look-for-rocks]
        [return-to-base]
@@ -143,9 +149,22 @@
        ;;1) make the robots move
        wiggle
      ]   
+     
+     ;;Manage the pheromone on the patches.
+     ask patches
+     [
+       ;;Handle this case separately so that we don't go into negatives.
+       if pheromoneCounter = 1[
+         set pheromoneCounter 0
+         set pcolor baseColor
+       ]
+       ;;Colors denote trail strength.
+       if pheromoneCounter > 1 and pheromoneCounter <= 50 [set pcolor cyan - 13]
+       if pheromoneCounter > 50 and pheromoneCounter <= 100 [set pcolor cyan - 10]
+       if pheromoneCounter > 0 [set pheromoneCounter pheromoneCounter - 1]
+     ]
    ]
-   ;;advance the clock
-   tick
+  
    
    if not any? patches with [pcolor = yellow][
      set numberOfRocks 0
@@ -158,7 +177,10 @@
      ]
      stop
    ]
-  
+   
+   ;;advance the clock
+   tick
+   
  end
  
  
@@ -205,6 +227,10 @@
        ask myself [
          set searching? false
          set shape "robot with rock"
+         ;;If is 1 or more additional rocks in the area, lay a trail back.
+         if count neighbors with [pcolor = yellow] > 1[
+           set usingPheromone? true
+         ]
          ]
         ]
        ]
@@ -223,15 +249,34 @@
  ifelse pcolor = green
    
  ;;2) Change the robot's shape to the one without the rock,
- ;;   and start searching again.
+ ;;   and start searching again. Check if there are any 
+ ;;   pheromone trails near us to follow.
   [
   set shape "robot"
   set searching? true
+  check-for-trails
   ]
                              
  ;;3) Else, we didn't find the base yet--face the base
-  [facexy 0 0 ]
+ ;;   Also lay a pheromone trail if we are using pheromone.
+ ;;   Be careful not to knock out rocks.
+  [
+    facexy 0 0 
+    if usingPheromone? [
+      ask patch-here[
+        if pcolor != yellow [
+        set pcolor cyan
+        set pheromoneCounter pheromoneDuration
+        ]
+      ]
+      ]
+    ]
+ end
  
+  
+ ;------------------------------------------------------------------------------------
+ ;;If there are any trails around us, the robot has a probability of picking up the closest one.
+ to check-for-trails
  end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -356,15 +401,30 @@ NIL
 HORIZONTAL
 
 MONITOR
-79
-306
-192
-351
+78
+403
+191
+448
 rocks remaining
-numberOfRocks
+count patches with [pcolor = yellow]
 17
 1
 11
+
+SLIDER
+14
+322
+193
+355
+pheromoneDuration
+pheromoneDuration
+0
+500
+240
+10
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
