@@ -2,29 +2,31 @@
  ;; elizabeth@cs.unm.edu
  ;; The University of New Mexico
  ;; Swarmathon 3: Introduction to Deterministic Search
- ;; Last Revision 01/03/2016
+ ;; Last Revision 01/04/2016
  
   ;;use robots instead of turtles
   breed [robots robot]
   
   ;;robots need to know:
   robots-own [
-     ;;are they currently working with a list of rock locations?
+     ;;are they currently working with a list of rock locations? (in the processingList? state)
+           
+     ;;are they currently returning to the base? (in the returning? state)
+    
+     ;;store a list of rocks we have seen
             
-     ;;are they currently returning to the base?
+     ;;target coordinate x
             
-      ;;store a list of rocks we have seen
+     ;;target coordinate y
             
-      ;;target coordinate x
-            
-      ;;target coordinate y
-            
-      ;;list of cardinal directions for the robot to explore
+     ;;list of cardinal directions for the robot to explore
+     
     ]
   
   ;;patches need to know:
   patches-own [
-      ;;color before adding rocks
+     ;;base color before adding rocks
+      
     ]  
 
 
@@ -39,7 +41,8 @@ to setup
   ca ;clear all
   cp ;clear patches
   reset-ticks ;keep track of simulation runtime
-  ;call these three sub procedures
+  
+  ;setup calls these three sub procedures.
   make-robot  
   make-cross
   make-base
@@ -47,9 +50,11 @@ end
 
 ;Fill in the sub procedures.
 ;------------------------------------------------------------------------------------
-;Create a robot and set its properties and robots-own variables.
+;Create a robot. Set its properties and the robots-own variables that you defined previously.
 to make-robot
   ;;1)
+  
+    
     ;Set robot's initial heading to north = 0
     
     ;Make a list with the degrees of remaining directions. (south = 180, east = 90, west = 270)
@@ -130,6 +135,7 @@ to set-direction
       ;grab the first one and set the robot's heading to it, then
       
       ;remove that direction from the list.
+      
 end
 ;------------------------------------------------------------------------------------
 
@@ -214,6 +220,7 @@ to move-to-location
 to do-DFS
   ;;1) 
   ;;ask the patch-here
+  
      ;;if its pcolor is yellow,
      
       ;;make an empty list to store the coords of the rock we're on.
