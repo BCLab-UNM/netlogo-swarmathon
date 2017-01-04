@@ -97,7 +97,8 @@ to DFS
   ask robots[
    
    ;;1) If we are processing but no rocks are left in our list, we're done processing. 
-               ;;Turn off the processingList? state.
+               ;;Turn off the processingList? state and realign the robot with the base so that the direction headings work.
+               
      
      ;;2) Nested statement: If we are done processing the list, then check to see if any directions are left for us to explore with DFS.
      
@@ -164,9 +165,9 @@ end
 
 ;;Fill in sub procedures.
 ;------------------------------------------------------------------------------------ 
-;;rockLocation is a list of lists: [ [a b] [c d]...[y z] ]
+;;rockLocations is a list of lists: [ [a b] [c d]...[y z] ]
 to reset-target-coords
-  ;;1) if rockLocation is not empty
+  ;;1) if rockLocations is not empty
   
        ;;Grab the first element of rockLocations, a list of 2 coordinates: [a b]
        
@@ -180,7 +181,7 @@ end
 ;------------------------------------------------------------------------------------
  to return-to-base
    
- ;; If the patch color is green, we found the base--but we must go to the origin for the direction headings to work.
+ ;; If the patch color is green, we found the base.
  ;;2)
    
  ;; Change the robot's shape to the one without the rock.
@@ -223,7 +224,7 @@ to do-DFS
   
      ;;if its pcolor is yellow,
      
-      ;;make an empty list to store the coords of the rock we're on.
+      ;;make a list of the coords of the rock we're on.
       
       ;;then ask the robots 
       
