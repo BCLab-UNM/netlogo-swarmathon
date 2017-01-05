@@ -1,8 +1,12 @@
+;----------------------------------------------------------------------------------------------
+ ;; INSTRUCTOR FILE
+ ;----------------------------------------------------------------------------------------------
+
  ;; Elizabeth E. Esterly
  ;; elizabeth@cs.unm.edu
  ;; The University of New Mexico
  ;; Swarmathon 2: Advanced Bio-Inspired Search
- ;; Last Revision 01/04/2016
+ ;; Last Revision 01/05/2016
 
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  ;;    Globals and Properties    ;;
@@ -15,18 +19,29 @@
  ;;Let's load the bitmap extension to use a Mars planet background.
  extensions[ bitmap ]
  
- ;;We need to keep track of how many rocks are left to gather, and if our robot is looking for a rock.
- globals [ numberOfRocks ]         ;;total number of rocks to gather on the grid
-
-;;We need each robot to know some information about itself.
+ ;;We need to keep track of how many rocks are left to gather.
+ globals [ numberOfRocks ]         
+ 
+;;Each robot knows some information about itself:
  robots-own [
-   searching?                      ;;robots need to know if they are in the searching state.
+   ;;Is it in the searching? state?
+   searching?     
    
+   ;;Is it in the returning? state?                 
+   returning?
+   
+   ;;1) Is it usingPheromone?
+
    ]           
  
- ;;We need each patch to know some information about itself.
+ ;;Each patch knows some information about itself:
  patches-own [
-   baseColor                       ;;Patches need to know what color they started as.
+   
+   ;;What color they start as.
+   baseColor   
+   
+   ;;2) How much time they have left of pheromone before it evaporates.                    
+   
    
    ]
  
@@ -34,48 +49,37 @@
  
  ;--------------------------------------------------------------------------------------
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;
- ;;       Setup           ;;
+ ;;       setup           ;;
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;
  
  to setup 
                   
    ;;Clear all the data for a fresh start
-   clear-all
+   ca
    
    ;;Import the background image of Mars
    bitmap:copy-to-pcolors bitmap:import "mars.jpg" true
-   
-   ;;Patches remember their starting color
-   ask patches [set baseColor pcolor]
-   
-   ;;1) Set the global numberOfRocks to 0 to start 
+
+   ;;Set the global numberOfRocks to 0 to start 
    set numberOfRocks 0
   
-     
-   ;;2) Here we create some robots. NetLogo's default shape for an agent is a turtle,
-   ;;so change their shape from a turtle to a robot.
-   ;;Set its size to 8, so you can see it more clearly.
+   ;; Create a number of robots based on the slider bar. Set their properties
+   ;; and robots-own variable values.
    create-robots numberOfRobots [
      set shape "robot"
      set size 8
+     set searching? true
+     set returning? false
+     
+     ;;1) Robots start off not using pheromone.
+     
    ]
    
-   ;;3) Set robots to start in search mode
-   ;;  also set robots to start without site fidelity,
-   ;;  and set the site fidelity coordinates to the origin.
-   ask robots [
-     set searching? true
-     ]
-
-   ;;4) Let's set some random patches to the color yellow to represent rocks. 
-   ;; We'll get the number of random patches from the slider singleRocks.
-   ;; pcolor means patch color.
-   ;; We don't want to make rocks that are off the planet, so we check if the random
-   ;; patch selected is black. We won't put a rock there if it is. We also don't want to add
-   ;; a rock right on top of another rock, so we'll check that too.
-   ;; != means 'does not equal'.
-   ;; Let's update our global variable numberOfRocks to keep track of 
-   ;; how many rocks we have. We do this after adding the rocks.
+   ;; Patches remember their starting color
+   ask patches [set baseColor pcolor]
+   
+   
+   ;;Set some random patches to the color yellow to represent rocks. 
    let targetPatches singleRocks
      while [targetPatches > 0][
        ask one-of patches[
@@ -88,35 +92,28 @@
      set numberOfRocks (numberOfRocks + singleRocks)
 
 
-   ;;5) Now, let's make some clusters of rocks for the robot to pick up.
-   ;; We'll get the number of clusters from the slider clusterRocks.
-   ;; We don't want to make rocks in an illegal place, so we check for black and yellow patches like before. 
-   ;; This time we must also ask the patches to the North, South, East, and West of our target patch to become 
-   ;; rocks also and add but only if they are not off-world or already rocks.
-   ;; Update numberOfRocks again.
-   set targetPatches (clusterRocks * 5)
-     while [targetPatches > 0][
+   ;; Make some clusters of 5 rocks.
+   let targetClusters clusterRocks
+     while [targetClusters > 0][
        ask one-of patches[
          if pcolor != black and pcolor != yellow 
             and [pcolor] of neighbors4 != black and [pcolor] of neighbors4 != yellow[
            set pcolor yellow
            ask neighbors4[ set pcolor yellow ]
-           set targetPatches targetPatches - 5
+           set targetClusters targetClusters - 1
          ]
        ]
      ]
      set numberOfRocks (numberOfRocks + (clusterRocks * 5))
+
+     
+   ;;2) Create some larger clusters of 29 rocks. 
    
    
-   ;;This code makes a base for the robot to return to when it finds a rock.
-   ;;We'll center the base at the origin (0,0), and make it a circle with radius 3.
-   ;;Let's color it green.
+   ;;Make the base. 
    ask patches
    [
-     if distancexy 0 0 < 4 ;;if the distance from the origin is less than 4
-     [
-       set pcolor green    ;;color the patches there green
-     ]
+     if distancexy 0 0 < 4 [set pcolor green]
    ]                      
                                         
   ;;reset ticks to 0
@@ -135,22 +132,34 @@
    [
      ask robots
      [
-       ;;2) ask the robots if they are using site fidelity and searching or not
-       ifelse searching? 
-       [look-for-rocks]
-       [return-to-base]
+       ;;These statements control the main behavior of the robots.
+       ;; 1) There are two cases where a robot is using pheromone:
+       ;;    - It found a sufficient density of rocks and is laying a trail back to the base
+       ;;      for other robots to follow.
+       ;;    - It picked up a trail at the base and is currently following it.
+       ;;    The first case is handled by return-to-base.
+       ;;    We'll need to take care of the second here:
+       ;;    If a robot is using pheromone but is not currently returning to the base, it
+       ;;    must be following a trail.
        
-       ;;1) make the robots move
+       
+       if searching? [look-for-rocks]
+       if returning? [return-to-base]
+       
+       ;;Make the robots move.
        wiggle
      ]   
+     
+     ;;2) Manage the pheromone on the patches.
+     
    ]
-   ;;advance the clock
-   tick
-   
+   ;;  The challenge from Swarmathon 1 to get the robots to go back to the base
+   ;;  after all rocks are colllected is implemented here.  
    if not any? patches with [pcolor = yellow][
      set numberOfRocks 0
      ask robots[
        set searching? false
+       set returning? true
        while [pcolor != green][
          return-to-base
          fd 1
@@ -158,7 +167,9 @@
      ]
      stop
    ]
-  
+   ;;advance the clock
+   tick
+   
  end
  
  
@@ -170,17 +181,17 @@
     
  to wiggle
    
-   ;; 1) turn right 0 - maxAngle degrees     
+   ;; Turn right 0 - maxAngle degrees.    
    right random maxAngle
           
-   ;; 2) turn left 0 - maxAngle degrees
+   ;; Turn left 0 - maxAngle degrees.
    left random maxAngle
    
-   ;; 3) turn around and face the origin if we hit the edge of the planet 
-   ;; (the patch color is black at the edge of the planet)
+   ;; Turn around and face the origin if we hit the edge of the planet 
+   ;; (the patch color is black at the edge of the planet).
    if pcolor = black [ facexy 0 0 ]
 
-   ;; 4) go forward one patch
+   ;; Go forward one patch
    forward 1
   
  end
@@ -192,23 +203,31 @@
  ;;;;;;;;;;;;;;;;;;;;
  
  to look-for-rocks
-   
-   ;;1) Ask the 8 patches around the robot if the patch color is yellow
+   ;;Ask the 8 patches around the robot if the patch color is yellow
    ask neighbors[
      if pcolor = yellow[
-   ;;2) If it is, take one rock away, and set search mode to false.
-   ;;   Change the patch color to the original color where we removed the rock.
-   ;;   Have the robot ask itself to turn off searching and set its shape to 
-   ;;   the one holding a rock.
-       set pcolor baseColor
+     ;;   If it is, take one rock away,
+     ;;   and change the patch color back to its original color.
        set numberOfRocks (numberOfRocks - 1)  
-       ask myself [
+       set pcolor baseColor
+       
+       ;; The robot asks itself to:
+       ;; Turn off searching? 
+       ;; Turn on returning?
+       ;; Set its shape to the one holding the rock.
+       ask myself [ 
          set searching? false
+         set returning? true
          set shape "robot with rock"
          ]
-        ]
-       ]
-
+       
+       ;; 1) Now count the yellow patches (rocks) around the robot.
+       ;; If that number is greater than equal to 2, the robot
+       ;; asks itself to set usingPheromone? to true.
+      
+     ]
+   ]     
+   
        
  end   
  
@@ -218,26 +237,81 @@
  ;;;;;;;;;;;;;;;;;;;;
  
  to return-to-base
-   
- ;;1) If the patch color is green, we found the base.
+ ;; If the patch color is green, we found the base.
  ifelse pcolor = green
    
- ;;2) Change the robot's shape to the one without the rock,
- ;;   and start searching again.
+ ;; Change the robot's shape to the one without the rock,
+ ;; and start searching again. 
   [
   set shape "robot"
+  set returning? false
   set searching? true
+  
+ ;; 1) Set pheromone detection on with probability equal to the slider value.
+ ;; If detection is activated, turn on pheromone, turn off searching, and
+ ;; check-for-trails.
+
   ]
                              
- ;;3) Else, we didn't find the base yet--face the base
-  [facexy 0 0 ]
+ ;; Else, we didn't find the base yet--face the base.
+  [
+    facexy 0 0 
+    
+    ;;  2) Lay a pheromone trail back to the base if we are using pheromone.
+    ;;  Other robots can pick it up.
+    ;;  Be careful not to knock out rocks with the trail!
+    ;;  Have the patch set its counter for how long the pheromone lasts.
+    
+   ]
  
+ end
+
+ ;------------------------------------------------------------------------------------
+ ;;;;;;;;;;;;;;;;;;;;;;
+ ;; check-for-trails ;;
+ ;;;;;;;;;;;;;;;;;;;;;;
+ to check-for-trails
+    
+   ;; 1) Use an ifelse statement. 
+   ;; Sense if there are any? trails near the robot (in-radius 5).
+   ;; Robots cannot sense the faintest trails, so only check for the strongest and slightly evaporated trails:
+   ;; these trails have color cyan or cyan - 10.
+    
+     ;; 2) If there is at least one patch that has a trail on it, create a variable called target to hold the one that's farthest
+     ;; from the origin.
+     
+     
+     ;; 3) Use a nested ifelse statement.
+     ;; Compare the distance from the origin of the target patch to that of the robot.
+     ;; If the patch is farther away than the origin than the robot, then set the robot's
+     ;; label to "ph" to indicate that it's using pheromone.
+    
+    
+     ;; 4) Else, the trail must be evaporating, or it is behind us. 
+     ;; Call the sub procedure to take us back to search mode.
+     
+     
+   ;; 5) There aren't any trails near us.
+   ;; Call the sub-procedure to take us back to search mode. 
+
+ end
+ 
+ ;; 6) Fill in the sub-procedure.
+ ;------------------------------------------------------------------------------------
+ to switch-to-search-from-pheromone
+   
+   ;; Turn off usingPheromone?
+   
+   ;; Turn on searching?
+   
+   ;; Set the label back to empty.
+   
  end
 @#$#@#$#@
 GRAPHICS-WINDOW
-219
+307
 10
-832
+920
 644
 100
 100
@@ -304,7 +378,7 @@ numberOfRobots
 numberOfRobots
 1
 20
-6
+10
 1
 1
 NIL
@@ -319,7 +393,7 @@ singleRocks
 singleRocks
 0
 100
-50
+0
 5
 1
 NIL
@@ -334,7 +408,7 @@ clusterRocks
 clusterRocks
 0
 50
-25
+50
 1
 1
 NIL
@@ -349,22 +423,67 @@ maxAngle
 maxAngle
 0
 90
-45
+20
 5
 1
 NIL
 HORIZONTAL
 
 MONITOR
-79
-306
-192
-351
+74
+466
+187
+511
 rocks remaining
-numberOfRocks
+count patches with [pcolor = yellow]
 17
 1
 11
+
+SLIDER
+12
+355
+191
+388
+pheromoneDuration
+pheromoneDuration
+0
+500
+490
+10
+1
+NIL
+HORIZONTAL
+
+SLIDER
+22
+298
+194
+331
+largeClusterRocks
+largeClusterRocks
+0
+10
+10
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+14
+407
+286
+440
+percentChanceToFollowPheromone
+percentChanceToFollowPheromone
+0
+100
+72
+1
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?

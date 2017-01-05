@@ -6,7 +6,7 @@
  ;; elizabeth@cs.unm.edu
  ;; The University of New Mexico
  ;; Swarmathon 2: Advanced Bio-Inspired Search
- ;; Last Revision 01/04/2016
+ ;; Last Revision 01/05/2016
 
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  ;;    Globals and Properties    ;;
@@ -19,9 +19,9 @@
  ;;Let's load the bitmap extension to use a Mars planet background.
  extensions[ bitmap ]
  
- ;;We need to keep track of how many rocks are left to gather, and if our robot is looking for a rock.
- globals [ numberOfRocks ]         ;;total number of rocks to gather on the grid
-
+ ;;We need to keep track of how many rocks are left to gather.
+ globals [ numberOfRocks ]         
+ 
 ;;Each robot knows some information about itself:
  robots-own [
    ;;Is it in the searching? state?
@@ -30,15 +30,17 @@
    ;;Is it in the returning? state?                 
    returning?
    
-   ;;Is it usingPheromone?
+   ;;1) Is it usingPheromone?
    usingPheromone?
    ]           
  
  ;;Each patch knows some information about itself:
  patches-own [
+   
    ;;What color they start as.
    baseColor   
-   ;;How much time they have left of pheromone before it evaporates.                    
+   
+   ;;2) How much time they have left of pheromone before it evaporates.                    
    pheromoneCounter
    
    ]
@@ -68,6 +70,8 @@
      set size 8
      set searching? true
      set returning? false
+     
+     ;;1) Robots start off not using pheromone.
      set usingPheromone? false
    ]
    
@@ -103,7 +107,7 @@
      set numberOfRocks (numberOfRocks + (clusterRocks * 5))
 
      
-   ;;Create some larger clusters of 29 rocks. 
+   ;;2) Create some larger clusters of 29 rocks. 
    let targetLargeClusters largeClusterRocks
    while [targetLargeClusters > 0][
      ask one-of patches[
@@ -140,7 +144,14 @@
      ask robots
      [
        ;;These statements control the main behavior of the robots.
-       
+       ;; 1) There are two cases where a robot is using pheromone:
+       ;;    - It found a sufficient density of rocks and is laying a trail back to the base
+       ;;      for other robots to follow.
+       ;;    - It picked up a trail at the base and is currently following it.
+       ;;    The first case is handled by return-to-base.
+       ;;    We'll need to take care of the second here:
+       ;;    If a robot is using pheromone but is not currently returning to the base, it
+       ;;    must be following a trail.
        if usingPheromone? and not returning? [check-for-trails]
        if searching? [look-for-rocks]
        if returning? [return-to-base]
@@ -149,10 +160,11 @@
        wiggle
      ]   
      
-     ;;Manage the pheromone on the patches.
+     ;;2) Manage the pheromone on the patches.
      ask patches
      [
-       ;;Handle this case separately so that we don't go into negatives.
+       ;; Handle the case where the pheromoneCounter is down to 1 separately 
+       ;; so that we don't go into negatives.
        if pheromoneCounter = 1[
          set pheromoneCounter 0
          set pcolor baseColor
@@ -164,6 +176,8 @@
      ]
    ]
   
+   ;;  The challenge from Swarmathon 1 to get the robots to go back to the base
+   ;;  after all rocks are colllected is implemented here.  
    if not any? patches with [pcolor = yellow][
      set numberOfRocks 0
      ask robots[
@@ -190,17 +204,17 @@
     
  to wiggle
    
-   ;; 1) turn right 0 - maxAngle degrees     
+   ;; Turn right 0 - maxAngle degrees.    
    right random maxAngle
           
-   ;; 2) turn left 0 - maxAngle degrees
+   ;; Turn left 0 - maxAngle degrees.
    left random maxAngle
    
-   ;; 3) turn around and face the origin if we hit the edge of the planet 
-   ;; (the patch color is black at the edge of the planet)
+   ;; Turn around and face the origin if we hit the edge of the planet 
+   ;; (the patch color is black at the edge of the planet).
    if pcolor = black [ facexy 0 0 ]
 
-   ;; 4) go forward one patch
+   ;; Go forward one patch.
    forward 1
   
  end
@@ -220,15 +234,19 @@
        set numberOfRocks (numberOfRocks - 1)  
        set pcolor baseColor
        
-       ;;The robot asks itself to:
+       ;; The robot asks itself to:
        ;; Turn off searching? 
-       ;; If there are still rocks around,turn off usingPheromone? (if it was)
        ;; Turn on returning?
+       ;; Set its shape to the one holding the rock.
        ask myself [ 
          set searching? false
          set returning? true
          set shape "robot with rock"
          ]
+       
+       ;; 1) Now count the yellow patches (rocks) around the robot.
+       ;; If that number is greater than equal to 2, the robot
+       ;; asks itself to set usingPheromone? to true.
        if count patches in-radius 1 with [pcolor = yellow] >= 2[
          ask myself [set usingPheromone? true]
        ]
@@ -244,29 +262,35 @@
  ;;;;;;;;;;;;;;;;;;;;
  
  to return-to-base
- ;;1) If the patch color is green, we found the base.
+ ;; If the patch color is green, we found the base.
  ifelse pcolor = green
    
- ;;2) Change the robot's shape to the one without the rock,
- ;;   and start searching again. Set pheromone detection on with
- ;;   the probability value from the slider, then check for trails.
+ ;; Change the robot's shape to the one without the rock,
+ ;; and start searching again. 
   [
   set shape "robot"
   set returning? false
+  set searching? true
+  
+ ;; 1) Set pheromone detection on with probability equal to the slider value.
+ ;; If detection is activated, turn on pheromone, turn off searching, and
+ ;; check-for-trails.
   set usingPheromone? false
-  ifelse random 100 < percentChanceToFollowPheromone[
+  if random 100 < percentChanceToFollowPheromone[
     set usingPheromone? true
+    set searching? false
     check-for-trails
   ]
-  [set searching? true]
-
   ]
                              
- ;;3) Else, we didn't find the base yet--face the base
- ;;   Also lay a pheromone trail if we are using pheromone.
- ;;   Be careful not to knock out rocks.
+ ;; Else, we didn't find the base yet--face the base.
   [
     facexy 0 0 
+    
+    ;;  2) Lay a pheromone trail back to the base if we are using pheromone.
+    ;;  Other robots can pick it up.
+    ;;  Be careful not to knock out rocks with the trail!
+    ;;  Have the patch set its counter for how long the pheromone lasts.
     if usingPheromone? [
       ask patch-here[
         if pcolor != yellow [
@@ -279,31 +303,52 @@
  end
 
  ;------------------------------------------------------------------------------------
- ;;If there are any trails around us, the robot has a probability of picking up the closest one.
- ;;The robot cannot follow the faintest class of trail.
+ ;;;;;;;;;;;;;;;;;;;;;;
+ ;; check-for-trails ;;
+ ;;;;;;;;;;;;;;;;;;;;;;
  to check-for-trails
     
+   ;; 1) Use an ifelse statement. 
+   ;; Sense if there are any? trails near the robot (in-radius 5).
+   ;; Robots cannot sense the faintest trails, so only check for the strongest and slightly evaporated trails:
+   ;; these trails have color cyan or cyan - 10.
    ifelse any? patches in-radius 5 with [(pcolor = cyan) or (pcolor = cyan - 10)] 
    [ 
+     ;; 2) If there is at least one patch that has a trail on it, create a variable called target to hold the one that's farthest
+     ;; from the origin.
      let target one-of patches in-radius 5 with [(pcolor = cyan) or (pcolor = cyan - 10)] with-max [distancexy 0 0]
+     
+     ;; 3) Use a nested ifelse statement.
+     ;; Compare the distance from the origin of the target patch to that of the robot.
+     ;; If the patch is farther away than the origin than the robot, then set the robot's
+     ;; label to "ph" to indicate that it's using pheromone.
      ifelse [distancexy 0 0] of target > [distancexy 0 0] of self [
        set label "ph"
        face target
      ]
-     [
-       set usingPheromone? false
-       set searching? true
-       set label ""
-       ]
+     ;; 4) Else, the trail must be evaporating, or it is behind us. 
+     ;; Call the sub procedure to take us back to search mode.
+     [ switch-to-search-from-pheromone]
      ]
-   [
-     set usingPheromone? false
-     set searching? true
-     set label ""]
+   ;; 5) There aren't any trails near us.
+   ;; Call the sub-procedure to take us back to search mode. 
+   [ switch-to-search-from-pheromone ]
+
+ end
+ 
+ ;; 6) Fill in the sub-procedure.
+ ;------------------------------------------------------------------------------------
+ to switch-to-search-from-pheromone
    
-
-     
-
+   ;; Turn off usingPheromone?
+   set usingPheromone? false
+   
+   ;; Turn on searching?
+   set searching? true
+   
+   ;; Set the label back to empty.
+   set label ""
+   
  end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -421,7 +466,7 @@ maxAngle
 maxAngle
 0
 90
-50
+20
 5
 1
 NIL
@@ -477,7 +522,7 @@ percentChanceToFollowPheromone
 percentChanceToFollowPheromone
 0
 100
-43
+72
 1
 1
 NIL
