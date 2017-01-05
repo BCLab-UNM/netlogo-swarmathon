@@ -1,12 +1,10 @@
-;----------------------------------------------------------------------------------------------
- ;; INSTRUCTOR FILE
  ;----------------------------------------------------------------------------------------------
-
  ;; Elizabeth E. Esterly
  ;; elizabeth@cs.unm.edu
  ;; The University of New Mexico
  ;; Swarmathon 2: Advanced Bio-Inspired Search
- ;; Last Revision 01/05/2016
+ ;; version 1.0
+ ;; Last Revision 01/05/2017
 
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  ;;    Globals and Properties    ;;
@@ -247,7 +245,7 @@
   set returning? false
   set searching? true
   
- ;; 1) Set pheromone detection on with probability equal to the slider value.
+ ;; 2) Set pheromone detection on with probability equal to the slider value.
  ;; If detection is activated, turn on pheromone, turn off searching, and
  ;; check-for-trails.
 
@@ -257,7 +255,7 @@
   [
     facexy 0 0 
     
-    ;;  2) Lay a pheromone trail back to the base if we are using pheromone.
+    ;;  1) Lay a pheromone trail back to the base if we are using pheromone.
     ;;  Other robots can pick it up.
     ;;  Be careful not to knock out rocks with the trail!
     ;;  Have the patch set its counter for how long the pheromone lasts.

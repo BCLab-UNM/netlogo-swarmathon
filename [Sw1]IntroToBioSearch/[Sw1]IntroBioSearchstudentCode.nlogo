@@ -1,8 +1,10 @@
+ ;----------------------------------------------------------------------------------------------
  ;; Elizabeth E. Esterly
  ;; elizabeth@cs.unm.edu
  ;; The University of New Mexico
  ;; Swarmathon 1: Introduction to Bio-Inspired Search
- ;; Last Revision 12/27/2016
+ ;; version 1.0
+ ;; Last Revision 01/05/2017
 
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  ;;    Globals and Properties    ;;

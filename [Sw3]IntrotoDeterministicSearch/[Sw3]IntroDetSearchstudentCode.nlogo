@@ -1,8 +1,10 @@
+ ;----------------------------------------------------------------------------------------------
  ;; Elizabeth E. Esterly
  ;; elizabeth@cs.unm.edu
  ;; The University of New Mexico
  ;; Swarmathon 3: Introduction to Deterministic Search
- ;; Last Revision 01/04/2016
+ ;; version 1.0 
+ ;; Last Revision 01/05/2017
  
   ;;use robots instead of turtles
   breed [robots robot]
