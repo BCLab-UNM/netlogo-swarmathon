@@ -74,7 +74,13 @@
    ]
    
    ;; Patches remember their starting color
-   ask patches [set baseColor pcolor]
+   ask patches [
+     set baseColor pcolor
+     
+     ;;2) There's no pheromone on the patches yet, so 
+     ;;   set the counter to 0.
+     
+     ]
    
    
    ;;Set some random patches to the color yellow to represent rocks. 
@@ -105,7 +111,7 @@
      set numberOfRocks (numberOfRocks + (clusterRocks * 5))
 
      
-   ;;2) Create some larger clusters of 29 rocks. 
+   ;;3) Create some larger clusters of 29 rocks. 
    
    
    ;;Make the base. 
@@ -220,7 +226,7 @@
          ]
        
        ;; 1) Now count the yellow patches (rocks) around the robot.
-       ;; If that number is greater than equal to 2, the robot
+       ;; If that number is greater than or equal to 2, the robot
        ;; asks itself to set usingPheromone? to true.
       
      ]

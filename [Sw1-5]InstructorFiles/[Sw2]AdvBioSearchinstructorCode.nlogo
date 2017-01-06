@@ -64,8 +64,8 @@
    ;;Set the global numberOfRocks to 0 to start 
    set numberOfRocks 0
   
-   ;; Create a number of robots based on the slider bar. Set their properties
-   ;; and robots-own variable values.
+   ;; Create a number of robots based on the slider bar. 
+   ;; Set their properties and robots-own variable values.
    create-robots numberOfRobots [
      set shape "robot"
      set size 8
@@ -77,7 +77,13 @@
    ]
    
    ;; Patches remember their starting color
-   ask patches [set baseColor pcolor]
+   ask patches [
+     set baseColor pcolor
+     
+     ;;2) There's no pheromone on the patches yet, so 
+     ;;   set the counter to 0.
+     set pheromoneCounter 0
+     ]
    
    
    ;;Set some random patches to the color yellow to represent rocks. 
@@ -108,7 +114,7 @@
      set numberOfRocks (numberOfRocks + (clusterRocks * 5))
 
      
-   ;;2) Create some larger clusters of 29 rocks. 
+   ;;3) Create some larger clusters of 29 rocks. 
    let targetLargeClusters largeClusterRocks
    while [targetLargeClusters > 0][
      ask one-of patches[
@@ -246,7 +252,7 @@
          ]
        
        ;; 1) Now count the yellow patches (rocks) around the robot.
-       ;; If that number is greater than equal to 2, the robot
+       ;; If that number is greater than or equal to 2, the robot
        ;; asks itself to set usingPheromone? to true.
        if count patches in-radius 1 with [pcolor = yellow] >= 2[
          ask myself [set usingPheromone? true]
@@ -437,7 +443,7 @@ singleRocks
 singleRocks
 0
 100
-0
+55
 5
 1
 NIL
@@ -452,7 +458,7 @@ clusterRocks
 clusterRocks
 0
 50
-50
+37
 1
 1
 NIL
