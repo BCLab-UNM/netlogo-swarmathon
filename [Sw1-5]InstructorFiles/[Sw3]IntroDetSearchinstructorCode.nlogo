@@ -165,7 +165,6 @@ to DFS
       
    ;;If the robot can't move, it must've reached a boundary.
    if not can-move? 1[
-     show rockLocations
      ;;Add the last rock to our list if we're standing on it by calling do-DFS.
      do-DFS
               
@@ -267,8 +266,6 @@ to move-to-location
  
  ;; We've arrived, so turn off returning? mode.
  set returning? false
- 
- show rockLocations
  
  ;; set locX 
  set locX 0
