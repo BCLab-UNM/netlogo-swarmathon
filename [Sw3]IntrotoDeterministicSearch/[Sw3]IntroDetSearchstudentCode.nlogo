@@ -12,23 +12,23 @@
   ;;1) robots need to know:
   robots-own [
      ;;are they currently working with a list of rock locations? (in the processingList? state)
-     processingList?     
+        
      
      ;;are they currently returning to the base? (in the returning? state)
-     returning?
+     
      
      ;;store a list of rocks we have seen
      ;;rockLocations is a list of lists: [ [a b] [c d]...[y z] ]
-     rockLocations
+     
            
      ;;target coordinate x
-     locX 
+     
             
      ;;target coordinate y
-     locY
+     
      
      ;;what heading (direction they are facing in degrees) they start with
-     initialHeading
+     
     ]
   
   ;;patches need to know:
@@ -74,35 +74,23 @@ end
 ;------------------------------------------------------------------------------------
 ;;1) Create a robot. Set its properties and the robots-own variables that you defined previously.
 to make-robot
-  create-robots numberOfRobots[
-    set size 5
-    set shape "robot"
-    set processingList? false
-    set returning? false
-    set rockLocations []
-    set locX 0
-    set locY 0
-    set initialHeading random 360
-    set heading initialHeading
-  ]
     
 end
 
 ;------------------------------------------------------------------------------------
 ;;2) Place rocks in a cross formation.
 to make-cross
-  ask patches [
+  
   ;;add some variation in the patches by adding a numerical value (color + random number)
-    set pcolor black + random 3
+    
   
     ;store color by setting baseColor variable before adding rocks
-    set baseColor pcolor
+    
                        
     ;;Set up the cross by taking the max coordinate value, doubling it, then only setting a rock if the
     ;;x or y coord is evenly divisible by that value. 
     ;;NOTE: This technique assumes a square layout.                  
-    let doublemax max-pxcor * 2 
-    if pxcor mod doublemax = 0 or pycor mod doublemax = 0 [ set pcolor yellow ] 
+   
      
   ]                   
 end
@@ -156,41 +144,38 @@ end
 to DFS 
   
   ;;1) Put the exit condition first. Stop when no yellow patches (rocks) remain.
-  if count patches with [pcolor = yellow] = 0 [stop] 
+  
   
   ;;All sub procedures called after this (set-direction, do-DFS, process-list) are within the ask robots block.
   ;;So, the procedures act as if they are already in ask robots.
   ;;That means that when you write the sub procedures, you don't need to repeat the ask robots command.
   
-  ;;2)
-  ask robots[
+  ;;2) Ask the robots:
+  
       
    ;;If the robot can't move, it must've reached a boundary.
-   if not can-move? 1[
+   
      ;;Add the last rock to our list if we're standing on it by calling do-DFS.
-     do-DFS
+     
               
      ;;If there's anything in our list, turn on the processingList? status.
-     ifelse not empty? rockLocations
-     [set processingList? true]
+     
                  
      ;;else go home to reset our search angle.
-     [set returning? true]            
-   ]
+     
      
    ;;3) Main control of the procedure goes here in an ifelse statement.   
    ;;Check if we are in the processing list state and not returning. If we are, then process the list.
    ;;(While we are processing, we'll also sometimes be in the returning? state
    ;;at the same time when we're dropping off rocks.
    ;;Robots should only process the list though when they're not dropping off a rock.
-      if processingList? and not returning? [process-list]
+      
    
    ;;If returning mode is on, the robots should return-to-base.
-      if returning? [return-to-base]
+     
    
    ;;Else, if the robots are not processing a list and not returning, they should do DFS.
-      if not processingList? and not returning? [do-DFS]
-   
+      
    
   ]
   tick ;;tick must be called from observer context--place outside the ask robots block.
@@ -206,23 +191,20 @@ to process-list
   
   ;;1) Control the robots based on the status of their internal list of rocks.
   ;;If the robot's list is not empty:
-  ifelse not empty? rockLocations[
+ 
     
   ;;2) ;If locX and locY are set to 0, then we just started or we just dropped off a rock.
-    if locX = 0 and locY = 0 [
+    
     
     ;;If they are, then we need a new destination, so reset our target coordinates, locX and locY.
     ;;We'll write the code for that in a sub procedure, so just call the procedure for now. 
-      reset-target-coords
-    ]
    
     ;;Now move-to-location of locX locY.
     ;;We'll write the code for that in a sub procedure, so just call the procedure for now. 
-    move-to-location
-  ]
+
   
   ;;3) rockLocations is empty. We're done processing the list.
-  [set processingList? false]
+ 
 
   ;;Go forward 1 step.
   fd 1
@@ -237,20 +219,20 @@ end
 to reset-target-coords
  
   ;;if rockLocations is not empty
-  if not empty? rockLocations[
+  
   
        ;;Grab the first element of rockLocations, a list of 2 coordinates: [a b]
-       let loc first rockLocations
+       
        
        ;;Now set robots-own x to the first element of this [a _]
-       set locX first loc
+      
        
        ;;and robots-own y to the last. [_ b]
-       set locY last loc
+       
        
        ;;and keep everything but the first list of coords (the ones we just used) 
        ;;in rockLocations. --> [ [c d]...[y z] ]
-       set rockLocations but-first rockLocations
+       
   ]
        
 end
@@ -262,20 +244,19 @@ end
 to move-to-location
   
   ;;If we've reached our target coordinates locX and locY,
-  ifelse (pxcor = locX and pycor = locY)[
+  
   
        ;; pick up the rock by setting the robot's shape to the one holding the rock,
-       set shape "robot with rock"
+       
        
        ;; and ask the patch-here to return to its base color.
-       ask patch-here[ set pcolor baseColor]
+       
        
        ;; Turn on returning? mode.
-       set returning? true
-  ]
+       
        
   ;Else the robot has not arrived yet; face the target location.
-  [facexy locX locY]
+  
   
  end
 
@@ -294,19 +275,16 @@ to move-to-location
    set returning? false
  
  ;; set locX 
-   set locX 0
+  
  
  ;; and locY to 0. Robots will return to base if they don't find anything.
-   set locY 0
+   
   
   ;;Use an if statement. A robot can also be here if it has finished processing a list
   ;;of if it didn't find anything at the current angle and was sent back to base. 
   ;;If this happened, change its heading so it searches in a different direction.
   ;;It will begin to search +searchAngle degrees from its last heading.
-   if not processingList?[
-     set initialHeading initialHeading + searchAngle
-     set heading initialHeading
-   ]
+   
  ]
                         
  ;; Else, we didn't find the origin yet--face the origin.
@@ -326,19 +304,16 @@ to move-to-location
 to do-DFS
  
   ;;1) ask the patch-here
-  ask patch-here[
+  
   
      ;;if its pcolor is yellow,
-     if pcolor = yellow[
+    
      
       ;;make a list of the coords of the rock we're on.
-      let location (list pxcor pycor)
+     
      
           ;;to add those coordinates to the front of their list of rocklocations and remove any duplicates.
-         ask myself[ set rockLocations remove-duplicates (fput location rockLocations)]
-
-     ]
-  ]
+        
 
   ;;Go forward 1.
   fd 1
