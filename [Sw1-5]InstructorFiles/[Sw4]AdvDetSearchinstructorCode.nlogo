@@ -1,34 +1,45 @@
+;----------------------------------------------------------------------------------------------
+ ;; INSTRUCTOR FILE
  ;----------------------------------------------------------------------------------------------
+
  ;; Elizabeth E. Esterly
  ;; elizabeth@cs.unm.edu
  ;; The University of New Mexico
- ;; Swarmathon 3: Introduction to Deterministic Search
+ ;; Swarmathon 4: Advanced Deterministic Search
  ;; version 1.0
  ;; Last Revision 01/09/2017
  
-  ;;use robots instead of turtles
-  breed [robots robot]
+  ;;1) use 2 breeds of robots: DFS-robots and spiral-robots
+  breed [DFS-robots DFS-robot]
+  breed [spiral-robots spiral-robot]
+    
   
-  ;;1) robots need to know:
-  robots-own [
+  ;;Update this from [Sw3] to be specific to DFS-robots.
+  ;;DFS robots need to know:
+  DFS-robots-own [
      ;;are they currently working with a list of rock locations? (in the processingList? state)
-     
+     processingList?     
      
      ;;are they currently returning to the base? (in the returning? state)
-    
+     returning?
      
      ;;store a list of rocks we have seen
      ;;rockLocations is a list of lists: [ [a b] [c d]...[y z] ]
-    
+     rockLocations
            
      ;;target coordinate x
-    
+     locX 
             
      ;;target coordinate y
-   
-     
+     locY
+
      ;;what heading (direction they are facing in degrees) they start with
- 
+     initialHeading
+    ]
+  
+  ;;2) spiral-robots need to know:
+  spiral-robots-own[
+  ]
   
   ;;patches need to know:
   patches-own [
@@ -50,7 +61,7 @@ to setup
   reset-ticks ;keep track of simulation runtime
   
   ;setup calls these three sub procedures.
-  make-robots 
+  make-robots
   make-rocks
   make-base
 end
@@ -71,27 +82,42 @@ end
 
 ;Fill in the next two sub procedures.
 ;------------------------------------------------------------------------------------
-;;1) Create the number of robots equal to the value of the numberOfRobots slider.
+;;1) Create the number of DFS-robots equal to the value of the numberOfDFSRobots slider.
+;; Create the number of spiral-robots equal to the value of the numberOfSpiralRobots slider.
 ;; Set their properties and their variables that you defined previously.
+;;This must be done separately.
 to make-robots
-
+  create-DFS-robots numberOfDFSRobots[
+    set size 5
+    set shape "robot"
+    set processingList? false
+    set returning? false
+    set rockLocations []
+    set locX 0
+    set locY 0
+    set initialHeading random 360
+    set heading initialHeading
+  ]
     
 end
 
 ;------------------------------------------------------------------------------------
 ;;2) Place rocks in a cross formation.
 to make-cross
-
+  ask patches [
   ;;add some variation in the patches by adding a numerical value (color + random number)
-   
+    set pcolor black + random 3
   
     ;store color by setting baseColor variable before adding rocks
-
+    set baseColor pcolor
                        
     ;;Set up the cross by taking the max coordinate value, doubling it, then only setting a rock if the
     ;;x or y coord is evenly divisible by that value. 
     ;;NOTE: This technique assumes a square layout.                  
-                  
+    let doublemax max-pxcor * 2 
+    if pxcor mod doublemax = 0 or pycor mod doublemax = 0 [ set pcolor yellow ] 
+     
+  ]                   
 end
 
 ;------------------------------------------------------------------------------------
@@ -133,6 +159,13 @@ to make-base
   
 end
 
+;MAIN
+to main
+  ask DFS-robots[DFS]
+  ask spiral-robots[fd 1]
+   tick ;;tick must be called from observer context, move into main procedure.
+end
+
 ;------------------------------------------------------------------------------------
  ;;;;;;;;;;;;;;;;;
  ;;    DFS      ;; : MAIN PROCEDURE
@@ -143,20 +176,20 @@ end
 to DFS 
   
   ;;1) Put the exit condition first. Stop when no yellow patches (rocks) remain.
-
+  if count patches with [pcolor = yellow] = 0 [stop] 
   
   ;;All sub procedures called after this (set-direction, do-DFS, process-list) are within the ask robots block.
   ;;So, the procedures act as if they are already in ask robots.
   ;;That means that when you write the sub procedures, you don't need to repeat the ask robots command.
   
   ;;2)
-
+  ask DFS-robots[
       
    ;;If the robot can't move, it must've reached a boundary.
-
+   if not can-move? 1[
      ;;Add the last rock to our list if we're standing on it by calling do-DFS.
-    
-                   
+     do-DFS
+              
      ;;If there's anything in our list, turn on the processingList? status.
      ifelse not empty? rockLocations
      [set processingList? true]
@@ -180,7 +213,7 @@ to DFS
    
    
   ]
-  tick ;;tick must be called from observer context--place outside the ask robots block.
+ 
 end
 
 ;------------------------------------------------------------------------------------
@@ -381,8 +414,8 @@ BUTTON
 64
 193
 98
-DFS
-DFS
+main
+main
 T
 1
 T
@@ -447,10 +480,10 @@ HORIZONTAL
 SLIDER
 18
 318
-190
+193
 351
-numberOfRobots
-numberOfRobots
+numberOfDFSRobots
+numberOfDFSRobots
 1
 10
 6

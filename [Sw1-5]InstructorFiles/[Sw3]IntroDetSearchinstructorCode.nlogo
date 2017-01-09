@@ -54,7 +54,7 @@ to setup
   reset-ticks ;keep track of simulation runtime
   
   ;setup calls these three sub procedures.
-  make-robot  
+  make-robots 
   make-rocks
   make-base
 end
@@ -75,8 +75,9 @@ end
 
 ;Fill in the next two sub procedures.
 ;------------------------------------------------------------------------------------
-;;1) Create a robot. Set its properties and the robots-own variables that you defined previously.
-to make-robot
+;;1) Create the number of robots equal to the value of the numberOfRobots slider.
+;; Set their properties and their variables that you defined previously.
+to make-robots
   create-robots numberOfRobots[
     set size 5
     set shape "robot"
