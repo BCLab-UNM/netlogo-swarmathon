@@ -8,6 +8,8 @@
  ;; Swarmathon 4: Advanced Deterministic Search
  ;; version 1.0
  ;; Last Revision 01/09/2017
+ ;; spiral-robots based on a program by Antonio Griego
+ ;; deano505@unm.edu
  
  ;;Use the bitmap extension.
  extensions[bitmap]
@@ -43,6 +45,18 @@
   
   ;;2) spiral-robots need to know:
   spiral-robots-own[
+    ;;counts the current number of steps the robot has taken
+    stepCount
+    
+    ;;the maximum number of steps a robot can take before it turns
+    maxStepCount
+    
+    ;;is the robot searching?
+    searching?
+    
+    ;;is the robot returning?
+    returning?
+    
   ]
   
   ;;patches need to know:
@@ -60,9 +74,9 @@
  ;------------------------------------------------------------------------------------
 ;Organize the code into main procedures and sub procedures.
 to setup
-  bitmap:copy-to-pcolors bitmap:import "parkinglot.jpg" true
   ca ;clear all
   cp ;clear patches
+  bitmap:copy-to-pcolors bitmap:import "parkingLot.jpg" true
   reset-ticks ;keep track of simulation runtime
   
   ;setup calls these three sub procedures.
@@ -74,12 +88,7 @@ end
 ;This sub procedure has been completed for you.
 ;------------------------------------------------------------------------------------
 to make-rocks
-   ask patches [
-  ;;add some variation in the patches by adding a numerical value (color + random number)
-    set pcolor black + random 3
-  ;;store color by setting baseColor variable before adding rocks
-    set baseColor pcolor
-   ]
+   ask patches [ set baseColor pcolor]
    
    if distribution = "cross" or distribution = "random + cross" 
    or distribution = "clusters + cross" or distribution = "random + clusters + cross" [make-cross]
@@ -102,6 +111,7 @@ to make-robots
   create-DFS-robots numberOfDFSRobots[
     set size 5
     set shape "robot"
+    set color blue
     set processingList? false
     set returning? false
     set rockLocations []
@@ -109,12 +119,24 @@ to make-robots
     set locY 0
     set initialHeading random 360
     set heading initialHeading
+
   ]
+  create-spiral-robots numberOfSpiralRobots[
+    set size 5
+    set shape "robot"
+    set color red
+    set maxStepCount 0 
+    set stepCount 0
+    set searching? true
+    set returning? false
+    set heading who * 90
+  ]
+
     
 end
 
 ;------------------------------------------------------------------------------------
-;;2) Place rocks in a cross formation.
+;;Place rocks in a cross formation.
 to make-cross
   ask patches [
                        
@@ -128,12 +150,12 @@ to make-cross
 end
 
 ;------------------------------------------------------------------------------------
-;Place rocks randomly.
+;;Place rocks randomly.
 to make-random
    let targetPatches singleRocks
      while [targetPatches > 0][
        ask one-of patches[
-         if pcolor != black and pcolor != yellow[
+         if pcolor != yellow[
            set pcolor yellow
            set targetPatches targetPatches - 1
          ]
@@ -142,13 +164,12 @@ to make-random
 end
 
 ;------------------------------------------------------------------------------------
-;Place rocks in clusters.
+;;Place rocks in clusters.
 to make-clusters
    let targetClusters clusterRocks
      while [targetClusters > 0][
        ask one-of patches[
-         if pcolor != black and pcolor != yellow 
-            and [pcolor] of neighbors4 != black and [pcolor] of neighbors4 != yellow[
+         if pcolor != yellow and [pcolor] of neighbors4 != yellow[
            set pcolor yellow
            ask neighbors4[ set pcolor yellow ]
            set targetClusters targetClusters - 1
@@ -165,21 +186,92 @@ to make-base
   ]
   
 end
-
-;MAIN
-to main
+;------------------------------------------------------------------------------------
+;------------------------------------------------------------------------------------
+;------------------------------------------------------------------------------------
+ ;;;;;;;;;;;;;;;;;;;;;;;;;
+ ;;    ROBOT CONTROL    ;; : MAIN PROCEDURE
+ ;;;;;;;;;;;;;;;;;;;;;;;;;
+ ;------------------------------------------------------------------------------------
+to robot-control
   ask DFS-robots[DFS]
-  ask spiral-robots[fd 1]
+  ask spiral-robots[spiral]
+  
+  ;;we can use 'turtles' to ask all agents to do something
+  ask turtles [
+    ifelse pen-down?
+    [pen-down]
+    [pen-up]
+  ]
    tick ;;tick must be called from observer context, move into main procedure.
 end
 
+;------------------------------------------------------------------------------------
+ ;;;;;;;;;;;;;;;;;;;
+ ;;    spiral     ;; : MAIN PROCEDURE
+ ;;;;;;;;;;;;;;;;;;;
+ ;------------------------------------------------------------------------------------
+;;Write the spiral procedure.
+to spiral
+if not can-move? 1 [set returning? true]
+if returning? [return-to-base-spiral]
+ifelse stepCount > 0[
+if searching?[
+  fd 1
+  look-for-rocks
+  set stepCount stepCount - 1
+]
+]
+[
+  left turnAngle
+  set maxStepCount maxStepCount + 1
+  set stepCount maxStepCount
+  ]
+end
+ 
+ ;------------------------------------------------------------------------------------
+ ;;;;;;;;;;;;;;;;;;;;
+ ;; look-for-rocks ;;
+ ;;;;;;;;;;;;;;;;;;;;
+ 
+ to look-for-rocks
+   ;;Ask the 8 patches around the robot if the patch color is yellow
+   ask neighbors[
+     if pcolor = yellow[
+     ;;  Change the patch color back to its original color. 
+       set pcolor baseColor
+     ]
+       
+       ;; The robot asks itself to:
+       ;; Turn off searching? 
+       ;; Turn on returning?
+       ;; Set its shape to the one holding the rock.
+       ask myself [ 
+         set searching? false
+         set returning? true
+         set shape "robot with rock"
+         ]
+   ]
+ end
+     
+     
+ to return-to-base-spiral
+   ifelse pcolor = green[
+     show "yo"
+     set searching? true
+     set returning? false
+     set shape "robot"
+   ]
+   [facexy 0 0]
+   fd 1
+ end
+ 
 ;------------------------------------------------------------------------------------
  ;;;;;;;;;;;;;;;;;
  ;;    DFS      ;; : MAIN PROCEDURE
  ;;;;;;;;;;;;;;;;;
  ;------------------------------------------------------------------------------------
 
-;;Write the DFS procedure.
 to DFS 
   
   ;;1) Put the exit condition first. Stop when no yellow patches (rocks) remain.
@@ -373,10 +465,10 @@ to do-DFS
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-210
-10
-725
-546
+235
+13
+750
+549
 50
 50
 5.0
@@ -400,10 +492,10 @@ ticks
 5.0
 
 BUTTON
-128
-12
-195
-46
+14
+10
+81
+44
 setup
 setup
 NIL
@@ -417,12 +509,12 @@ NIL
 1
 
 BUTTON
-129
-64
-193
-98
-main
-main
+89
+11
+207
+45
+robot-control
+robot-control
 T
 1
 T
@@ -434,10 +526,10 @@ NIL
 1
 
 MONITOR
-83
-114
-197
-159
+15
+60
+129
+105
 rocks remaining
 count patches with [pcolor = yellow]
 17
@@ -445,39 +537,24 @@ count patches with [pcolor = yellow]
 11
 
 CHOOSER
-10
-170
-198
-215
+17
+148
+205
+193
 distribution
 distribution
 "cross" "random" "clusters" "clusters + cross" "random + clusters" "random + cross" "random + clusters + cross"
 1
 
 SLIDER
-10
-225
-182
-258
+17
+199
+189
+232
 singleRocks
 singleRocks
 0
 100
-100
-5
-1
-NIL
-HORIZONTAL
-
-SLIDER
-11
-268
-183
-301
-clusterRocks
-clusterRocks
-0
-50
 50
 5
 1
@@ -485,34 +562,110 @@ NIL
 HORIZONTAL
 
 SLIDER
-18
-318
-193
-351
-numberOfDFSRobots
-numberOfDFSRobots
+17
+237
+189
+270
+clusterRocks
+clusterRocks
+0
+50
+30
+5
 1
+NIL
+HORIZONTAL
+
+SLIDER
+19
+298
+191
+331
+numberOfDFSRobots
+numberOfDFSRobots
+0
 10
-6
+2
 1
 1
 NIL
 HORIZONTAL
 
 SLIDER
-18
-366
-190
-399
+19
+341
+191
+374
 searchAngle
 searchAngle
-5
+1
 90
-5
-5
+80
+1
 1
 NIL
 HORIZONTAL
+
+SLIDER
+19
+413
+192
+446
+numberOfSpiralRobots
+numberOfSpiralRobots
+0
+10
+2
+1
+1
+NIL
+HORIZONTAL
+
+SWITCH
+17
+109
+129
+142
+pen-down?
+pen-down?
+0
+1
+-1000
+
+SLIDER
+20
+456
+192
+489
+turnAngle
+turnAngle
+0
+90
+90
+1
+1
+NIL
+HORIZONTAL
+
+TEXTBOX
+20
+284
+170
+302
+sliders for DFS-robots\n
+11
+0.0
+1
+
+TEXTBOX
+19
+396
+169
+414
+sliders for spiral-robots
+11
+0.0
+1
 
 @#$#@#$#@
 ## WHAT IS IT?

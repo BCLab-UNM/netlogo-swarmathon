@@ -41,7 +41,6 @@
     ]  
 
 
-
 ;------------------------------------------------------------------------------------
  ;;;;;;;;;;;;;;;;;;
  ;;    setup     ;; : MAIN PROCEDURE
@@ -95,6 +94,7 @@ to make-robots
     set locY 0
     set initialHeading random 360
     set heading initialHeading
+    if pen-down? [pen-down]
   ]
     
 end
@@ -429,7 +429,7 @@ CHOOSER
 distribution
 distribution
 "cross" "random" "clusters" "clusters + cross" "random + clusters" "random + cross" "random + clusters + cross"
-1
+3
 
 SLIDER
 10
@@ -490,6 +490,17 @@ searchAngle
 1
 NIL
 HORIZONTAL
+
+SWITCH
+67
+414
+192
+448
+pen-down?
+pen-down?
+0
+1
+-1000
 
 @#$#@#$#@
 ## WHAT IS IT?
