@@ -91,8 +91,7 @@ to make-cross
     ;;x or y coord is evenly divisible by that value. 
     ;;NOTE: This technique assumes a square layout.                  
    
-     
-  ]                   
+                     
 end
 
 ;------------------------------------------------------------------------------------
@@ -177,7 +176,6 @@ to DFS
    ;;Else, if the robots are not processing a list and not returning, they should do DFS.
       
    
-  ]
   tick ;;tick must be called from observer context--place outside the ask robots block.
 end
 
@@ -233,7 +231,6 @@ to reset-target-coords
        ;;and keep everything but the first list of coords (the ones we just used) 
        ;;in rockLocations. --> [ [c d]...[y z] ]
        
-  ]
        
 end
 ;------------------------------------------------------------------------------------
@@ -266,13 +263,11 @@ to move-to-location
  to return-to-base
    
  ;; If we're at the origin, we found the base.
- ifelse pcolor = green[ 
     
  ;; Change the robot's shape to the one without the rock.
-   set shape "robot"
+
  
  ;; We've arrived, so turn off returning? mode.
-   set returning? false
  
  ;; set locX 
   
@@ -285,10 +280,8 @@ to move-to-location
   ;;If this happened, change its heading so it searches in a different direction.
   ;;It will begin to search +searchAngle degrees from its last heading.
    
- ]
                         
  ;; Else, we didn't find the origin yet--face the origin.
- [ facexy 0 0 ]
  
  ;; Go forward 1.
  fd 1
