@@ -9,6 +9,10 @@
  ;; version 1.0
  ;; Last Revision 01/09/2017
  
+ ;;Use the bitmap extension.
+ extensions[bitmap]
+ 
+ 
   ;;1) use 2 breeds of robots: DFS-robots and spiral-robots
   breed [DFS-robots DFS-robot]
   breed [spiral-robots spiral-robot]
@@ -56,6 +60,7 @@
  ;------------------------------------------------------------------------------------
 ;Organize the code into main procedures and sub procedures.
 to setup
+  bitmap:copy-to-pcolors bitmap:import "parkinglot.jpg" true
   ca ;clear all
   cp ;clear patches
   reset-ticks ;keep track of simulation runtime
@@ -69,13 +74,20 @@ end
 ;This sub procedure has been completed for you.
 ;------------------------------------------------------------------------------------
 to make-rocks
+   ask patches [
+  ;;add some variation in the patches by adding a numerical value (color + random number)
+    set pcolor black + random 3
+  ;;store color by setting baseColor variable before adding rocks
+    set baseColor pcolor
+   ]
+   
    if distribution = "cross" or distribution = "random + cross" 
    or distribution = "clusters + cross" or distribution = "random + clusters + cross" [make-cross]
    
-   if distribution = "random + cross" 
+   if distribution = "random" or distribution = "random + cross" or distribution = "random + clusters"
    or distribution = "random + clusters + cross" [make-random]
    
-   if distribution = "clusters + cross"
+   if distribution = "clusters" or distribution = "clusters + cross" or distribution = "random + clusters"
    or distribution = "random + clusters + cross" [make-clusters]
    
 end
@@ -105,11 +117,6 @@ end
 ;;2) Place rocks in a cross formation.
 to make-cross
   ask patches [
-  ;;add some variation in the patches by adding a numerical value (color + random number)
-    set pcolor black + random 3
-  
-    ;store color by setting baseColor variable before adding rocks
-    set baseColor pcolor
                        
     ;;Set up the cross by taking the max coordinate value, doubling it, then only setting a rock if the
     ;;x or y coord is evenly divisible by that value. 
@@ -445,7 +452,7 @@ CHOOSER
 distribution
 distribution
 "cross" "random" "clusters" "clusters + cross" "random + clusters" "random + cross" "random + clusters + cross"
-6
+1
 
 SLIDER
 10
