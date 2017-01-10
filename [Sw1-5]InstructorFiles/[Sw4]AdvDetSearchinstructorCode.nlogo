@@ -227,7 +227,7 @@ end
  ;;    ROBOT CONTROL    ;; : MAIN PROCEDURE
  ;;;;;;;;;;;;;;;;;;;;;;;;;
  ;------------------------------------------------------------------------------------
- ;;1) Write the robot-control procedure. THe different breeds of robots will perform
+ ;;1) Write the robot-control procedure. The different breeds of robots will perform
  ;; different behaviors.
  
 to robot-control
@@ -239,13 +239,16 @@ to robot-control
   ask spiral-robots[spiral]
   
   ;; We can use 'turtles' to ask *all* agents to do something.
-  ;; Use an ifelse statement.
+  
 
-  ;;If the pen-down? switch is on, put the pen down
   ;; Ask the turtles
   ask turtles [
+    ;; Use an ifelse statement.
+    ;;If the pen-down? switch is on, put the pen down
     ifelse pen-down?
     [pen-down]
+    
+    ;;Else take the pen up.
     [pen-up]
   ]
    tick ;;tick must be called from observer context, move into main procedure.
@@ -256,27 +259,38 @@ end
  ;;    spiral     ;; : MAIN PROCEDURE
  ;;;;;;;;;;;;;;;;;;;
  ;------------------------------------------------------------------------------------
-;;Write the spiral procedure.
-to spiral
-if not can-move? 1 [
-  set returning? true
-  set stepCount 0
-  set maxStepCount 0
-  ]
-if returning? [return-to-base-spiral]
-ifelse stepCount > 0[
-if searching?[
-  fd 1
-  look-for-rocks
-  set stepCount stepCount - 1
-]
-]
-[
-  left turnAngle
-  set maxStepCount maxStepCount + 1
-  set stepCount maxStepCount
-  ]
-end
+;;1) Write the spiral procedure.
+ to spiral
+   
+   ;;If the robots can't move, they've hit the edge. They need to go back to the base and start a new spiral.
+   ;;Also reset their variables so they can start over.
+ if not can-move? 1 [
+   
+   ;;Set returning? to true to get them to go back to the base.
+   set returning? true
+   
+   ;;Set stepCount and maxStepCount back to 0.
+   set stepCount 0
+   set maxStepCount 0
+   ]
+ 
+ ;;If they are returning? they should do the return-to-base-spiral procedure.
+ if returning? [return-to-base-spiral]
+ 
+ ;;
+ ifelse stepCount > 0[
+   if searching?[
+     fd 1
+     look-for-rocks
+     set stepCount stepCount - 1
+   ]
+ ]
+ [
+   left turnAngle
+   set maxStepCount maxStepCount + 1
+   set stepCount maxStepCount
+   ]
+ end
  
  ;------------------------------------------------------------------------------------
  ;;;;;;;;;;;;;;;;;;;;
