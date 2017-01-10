@@ -240,7 +240,6 @@ end
      if pcolor = yellow[
      ;;  Change the patch color back to its original color. 
        set pcolor baseColor
-     ]
        
        ;; The robot asks itself to:
        ;; Turn off searching? 
@@ -251,16 +250,18 @@ end
          set returning? true
          set shape "robot with rock"
          ]
+     ]
    ]
  end
      
      
  to return-to-base-spiral
    ifelse pcolor = green[
-     show "yo"
+    
      set searching? true
      set returning? false
      set shape "robot"
+     set heading who * 90
    ]
    [facexy 0 0]
    fd 1
@@ -600,7 +601,7 @@ searchAngle
 searchAngle
 1
 90
-80
+5
 1
 1
 NIL
