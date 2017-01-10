@@ -213,7 +213,11 @@ end
  ;------------------------------------------------------------------------------------
 ;;Write the spiral procedure.
 to spiral
-if not can-move? 1 [set returning? true]
+if not can-move? 1 [
+  set returning? true
+  set stepCount 0
+  set maxStepCount 0
+  ]
 if returning? [return-to-base-spiral]
 ifelse stepCount > 0[
 if searching?[
@@ -256,7 +260,7 @@ end
      
      
  to return-to-base-spiral
-   ifelse pcolor = green[
+   ifelse pxcor = 0 and pycor = 0[
     
      set searching? true
      set returning? false
