@@ -15,11 +15,26 @@
  extensions[bitmap]
  
  
-  ;;1) use 2 breeds of robots: DFS-robots and spiral-robots
+  ;;1) use two breeds of robots: DFS-robots and spiral-robots
   breed [DFS-robots DFS-robot]
   breed [spiral-robots spiral-robot]
-    
   
+  ;;2) spiral-robots need to know:
+  spiral-robots-own[
+    ;;counts the current number of steps the robot has taken
+    stepCount
+    
+    ;;the maximum number of steps a robot can take before it turns
+    maxStepCount
+    
+    ;;is the robot searching?
+    searching?
+    
+    ;;is the robot returning?
+    returning?
+
+  ]
+    
   ;;Update this from [Sw3] to be specific to DFS-robots.
   ;;DFS robots need to know:
   DFS-robots-own [
@@ -43,29 +58,11 @@
      initialHeading
     ]
   
-  ;;2) spiral-robots need to know:
-  spiral-robots-own[
-    ;;counts the current number of steps the robot has taken
-    stepCount
-    
-    ;;the maximum number of steps a robot can take before it turns
-    maxStepCount
-    
-    ;;is the robot searching?
-    searching?
-    
-    ;;is the robot returning?
-    returning?
-    
-  ]
-  
   ;;patches need to know:
   patches-own [
      ;;base color before adding rocks
      baseColor
     ]  
-
-
 
 ;------------------------------------------------------------------------------------
  ;;;;;;;;;;;;;;;;;;
@@ -101,51 +98,88 @@ to make-rocks
    
 end
 
-;Fill in the next two sub procedures.
+;Fill in the next sub procedure.
 ;------------------------------------------------------------------------------------
 ;;1) Create the number of DFS-robots equal to the value of the numberOfDFSRobots slider.
 ;; Create the number of spiral-robots equal to the value of the numberOfSpiralRobots slider.
 ;; Set their properties and their variables that you defined previously.
 ;;This must be done separately.
 to make-robots
+  
+  ;;Create the number of DFS-robots based on the slider value.
   create-DFS-robots numberOfDFSRobots[
+    
+    ;;Set their size to 5.
     set size 5
+    
+    ;;Set their shape to "robot".
     set shape "robot"
+    
+    ;;Set their color to a color of your choice.
     set color blue
+    
+    ;;Set processingList? to false.
     set processingList? false
+    
+    ;;Set returning? to false.
     set returning? false
+    
+    ;;Set rockLocations to an empty list.
     set rockLocations []
+    
+    ;;Set locX and locY to 0.
     set locX 0
     set locY 0
+    
+   ;;Set initialHeading to a random degree.
     set initialHeading random 360
+    
+    ;;Set the robot's heading to the value of initialHeading.
     set heading initialHeading
 
   ]
+  
+  ;;Create the number of spiral-robots based on the slider value.
   create-spiral-robots numberOfSpiralRobots[
+    
+    ;;Set their size to 5.
     set size 5
+    
+    ;;Set their shape to "robot".
     set shape "robot"
+    
+    ;;Set their color to a color other than the one you chose for DFS-robots.
     set color red
+    
+    ;;Set maxStepCount to 0.
     set maxStepCount 0 
+    
+    ;;Set stepCount to 0.
     set stepCount 0
+    
+    ;;Set searching? to true.
     set searching? true
+    
+    ;;Set returning? to false.
     set returning? false
+    
+    ;;Set their heading to who * 90--who is an integer that represents the robot's number. 
+    ;;So robots will start at (1 * 90) = 90 degrees, (2 * 90) = 180 degrees...etc.
+    ;;This prevents the spirals from overlapping as much.
     set heading who * 90
   ]
-
-    
+ 
 end
 
 ;------------------------------------------------------------------------------------
 ;;Place rocks in a cross formation.
 to make-cross
-  ask patches [
-                       
+  ask patches [           
     ;;Set up the cross by taking the max coordinate value, doubling it, then only setting a rock if the
     ;;x or y coord is evenly divisible by that value. 
     ;;NOTE: This technique assumes a square layout.                  
     let doublemax max-pxcor * 2 
-    if pxcor mod doublemax = 0 or pycor mod doublemax = 0 [ set pcolor yellow ] 
-     
+    if pxcor mod doublemax = 0 or pycor mod doublemax = 0 [ set pcolor yellow ]  
   ]                   
 end
 
@@ -193,11 +227,22 @@ end
  ;;    ROBOT CONTROL    ;; : MAIN PROCEDURE
  ;;;;;;;;;;;;;;;;;;;;;;;;;
  ;------------------------------------------------------------------------------------
+ ;;1) Write the robot-control procedure. THe different breeds of robots will perform
+ ;; different behaviors.
+ 
 to robot-control
+  
+  ;;ask the DFS-robots to DFS.
   ask DFS-robots[DFS]
+  
+  ;;ask the spiral-robots to spiral.
   ask spiral-robots[spiral]
   
-  ;;we can use 'turtles' to ask all agents to do something
+  ;; We can use 'turtles' to ask *all* agents to do something.
+  ;; Use an ifelse statement.
+
+  ;;If the pen-down? switch is on, put the pen down
+  ;; Ask the turtles
   ask turtles [
     ifelse pen-down?
     [pen-down]
