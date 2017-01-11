@@ -1,5 +1,3 @@
-;----------------------------------------------------------------------------------------------
- ;; INSTRUCTOR FILE
  ;----------------------------------------------------------------------------------------------
 
  ;; Elizabeth E. Esterly
@@ -16,25 +14,28 @@
  
  
   ;;1) use two breeds of robots: spiral-robots and DFS-robots
-  breed [spiral-robots spiral-robot]
+  ;add the spiral-robots breed here
+  
+  ;;DFS-robots breed
   breed [DFS-robots DFS-robot]
+
   
   
   ;;2) spiral-robots need to know:
-  spiral-robots-own[
+
     ;;counts the current number of steps the robot has taken
-    stepCount
+ 
     
     ;;the maximum number of steps a robot can take before it turns
-    maxStepCount
+ 
     
     ;;is the robot searching?
-    searching?
+ 
     
     ;;is the robot returning?
-    returning?
+ 
 
-  ]
+
     
   ;;Updated from [Sw3] to be specific to DFS-robots.
   ;;DFS robots need to know:
@@ -108,34 +109,34 @@ end
 to make-robots
   
   ;;1) Create the number of spiral-robots based on the slider value.
-  create-spiral-robots numberOfSpiralRobots[
+ 
     
     ;;Set their size to 5.
-    set size 5
+   
     
     ;;Set their shape to "robot".
-    set shape "robot"
+    
     
     ;;Set their color to a color other than blue.
-    set color red
+    
     
     ;;Set maxStepCount to 0.
-    set maxStepCount 0 
+    
     
     ;;Set stepCount to 0.
-    set stepCount 0
+    
     
     ;;Set searching? to true.
-    set searching? true
+    
     
     ;;Set returning? to false.
-    set returning? false
+    
     
     ;;Set their heading to who * 90--who is an integer that represents the robot's number. 
     ;;So robots will start at (1 * 90) = 90 degrees, (2 * 90) = 180 degrees...etc.
     ;;This prevents the spirals from overlapping as much.
-    set heading who * 90
-  ]
+    
+  
   ;;Create the number of DFS-robots based on the slider value.
   create-DFS-robots numberOfDFSRobots[
     
@@ -227,7 +228,7 @@ end
  ;;    ROBOT CONTROL    ;; : MAIN PROCEDURE
  ;;;;;;;;;;;;;;;;;;;;;;;;;
  ;------------------------------------------------------------------------------------
- ;;1) Write the robot-control procedure. The different breeds of robots will perform
+ ;;1) Finish the robot-control procedure. The different breeds of robots will perform
  ;; different behaviors.
  
 to robot-control
@@ -236,11 +237,9 @@ to robot-control
   ask DFS-robots[DFS]
   
   ;;ask the spiral-robots to spiral.
-  ask spiral-robots[spiral]
+  
   
   ;; We can use 'turtles' to ask *all* agents to do something.
-  
-
   ;; Ask the turtles
   ask turtles [
     ;; Use an ifelse statement.
@@ -267,51 +266,47 @@ end
    
    ;;If the robots can't move, they've hit the edge. They need to go back to the base and start a new spiral.
    ;;Also reset their variables so they can start over.
- if not can-move? 1 [
+
    
    ;;Set returning? to true to get them to go back to the base.
-   set returning? true
+   
    
    ;;Set stepCount and maxStepCount back to 0.
-   set stepCount 0
-   set maxStepCount 0
-   ]
+  
  
  ;;If they are returning? they should do the return-to-base-spiral procedure.
- if returning? [return-to-base-spiral]
+
  
  ;;The following code makes a spiral. 
  ;;The robot increases the distance it travels in a line
  ;;before making a left turn.
  
  ;;if the robot's stepCount is greater than 0, 
- ifelse stepCount > 0[
+
    
    ;;if the robot is searching?
-   if searching?[
+ 
      
      ;;Go forward 1.
-     fd 1
+   
      
      ;;look-for rocks,
-     look-for-rocks
+    
      
      ;;then reduce stepCount by 1.
-     set stepCount stepCount - 1
-   ]
- ]
+    
+
  ;Else, no steps remain.
- [
    
    ;; the robot should turn left based on the value of turnAngle,
-   left turnAngle
+   
    
    ;;increase the maxStepCount by 1,
-   set maxStepCount maxStepCount + 1
+  
    
    ;;then set the value of stepCount to the value of maxStepCount.
-   set stepCount maxStepCount
-   ]
+
+
  end
  
  ;Fill in the next two sub procedures.
@@ -320,27 +315,25 @@ end
  
  to look-for-rocks
    ;;Ask the 8 patches around the robot (neighbors) 
-   ask neighbors[
+ 
      ;;if the patch color is yellow,
-     if pcolor = yellow[
+   
        
      ;;  Change the patch color back to its original color. 
-       set pcolor baseColor
+      
        
        ;; The robot asks itself to:
-       ask myself [ 
+      
          
          ;; Turn off searching?,
-         set searching? false
+         
          
          ;; Turn on returning?,
-         set returning? true
+       
          
          ;; and set its shape to the one holding the rock.
-         set shape "robot with rock"
-         ]
-     ]
-   ]
+
+
  end
      
  ;------------------------------------------------------------------------------------
@@ -356,25 +349,25 @@ end
  to return-to-base-spiral
    
    ; If we've reached the origin, we're at the base.
-   ifelse pxcor = 0 and pycor = 0[
+   
      
      ;;set searching? to true,
-     set searching? true
+  
      
      ;set returning? to false,
-     set returning? false
+    
      
      ;set its shape to the robot without the rock
-     set shape "robot"
+    
      
      ;;choose a cardinal direction for the robot.
-     set heading who * 90
-   ]
+
+
    ;;Else we're not at the origin/base yet--face it.
-   [facexy 0 0]
-   
+
+  
    ;;Go forward 1.
-   fd 1
+
  end
  
 ;------------------------------------------------------------------------------------
