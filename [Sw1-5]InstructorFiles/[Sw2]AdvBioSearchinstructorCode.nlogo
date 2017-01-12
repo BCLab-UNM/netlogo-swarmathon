@@ -131,7 +131,7 @@
    ;;Make the base. 
    ask patches
    [
-     if distancexy 0 0 < 4 [set pcolor green]
+     if distancexy 0 0 = 0 [set pcolor green]
    ]                      
                                         
   ;;reset ticks to 0
@@ -316,14 +316,14 @@
  to check-for-trails
     
    ;; 1) Use an ifelse statement. 
-   ;; Sense if there are any? trails near the robot (in-radius 5).
+   ;; Sense if there are any? trails near the robot (in-radius 2).
    ;; Robots cannot sense the faintest trails, so only check for the strongest and slightly evaporated trails:
    ;; these trails have color cyan or cyan - 10.
-   ifelse any? patches in-radius 5 with [(pcolor = cyan) or (pcolor = cyan - 10)] 
+   ifelse any? patches in-radius 2 with [(pcolor = cyan) or (pcolor = cyan - 10)] 
    [ 
      ;; 2) If there is at least one patch that has a trail on it, create a variable called target to hold the one that's farthest
      ;; from the origin.
-     let target one-of patches in-radius 5 with [(pcolor = cyan) or (pcolor = cyan - 10)] with-max [distancexy 0 0]
+     let target one-of patches in-radius 2 with [(pcolor = cyan) or (pcolor = cyan - 10)] with-max [distancexy 0 0]
      
      ;; 3) Use a nested ifelse statement.
      ;; Compare the distance from the origin of the target patch to that of the robot.
