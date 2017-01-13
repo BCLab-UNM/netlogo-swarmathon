@@ -38,7 +38,7 @@ A series of 5 tutorial modules created in NetLogo that prepare the user for part
 <li>[Sw4]AdvDetSearchwalkthrough (.pdf, .docx, .pages)
 <li>Swarmathon[1-5] Module User Guide/Getting Started/FAQ
 </ul><br>
-<u>KNOWN BUGS AND SOME WORKAROUNDS</u><br>
+<u>KNOWN BUGS AND WORKAROUNDS</u><br>
 <ul>
 <li>BUG: [all .nlogo files] Double clicking on an .nlogo file to open it sometimes results in the file opening empty.<br>
 WORKAROUND: Don't panic! Open the file directly through NetLogo <code>(File -> Open...)</code>. This a NetLogo thing and cannot be resolved from our end.
@@ -47,5 +47,4 @@ WORKAROUND: There's a lot of drawing going on with the multiple pheromone trails
 <li>BUG: [SW3] When run at high speeds, the robots sometimes get "off track."<br>
 WORKAROUND: Decrease the speed slider to be on the <code>slower</code> side.
 <li>BUG: Formatting on .pages versions of walkthrough is wonky in some places.
-<li>
-</ul>
+</ul><br>
