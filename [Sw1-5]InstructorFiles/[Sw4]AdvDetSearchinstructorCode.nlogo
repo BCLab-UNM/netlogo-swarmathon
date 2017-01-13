@@ -7,7 +7,7 @@
  ;; The University of New Mexico
  ;; Swarmathon 4: Advanced Deterministic Search
  ;; version 1.0
- ;; Last Revision 01/11/2017
+ ;; Last Revision 01/13/2017
  ;; spiral-robots based on a program by Antonio Griego
  ;; deano505@unm.edu
  
@@ -216,7 +216,7 @@ end
 ;Make a base at the origin.
 to make-base
   ask patches[
-    if distancexy 0 0 < 4 [set pcolor green]
+    if distancexy 0 0 = 0 [set pcolor green]
   ]
   
 end

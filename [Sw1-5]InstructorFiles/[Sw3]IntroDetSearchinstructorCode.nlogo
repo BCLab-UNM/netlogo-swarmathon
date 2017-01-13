@@ -7,7 +7,7 @@
  ;; The University of New Mexico
  ;; Swarmathon 3: Introduction to Deterministic Search
  ;; version 1.0
- ;; Last Revision 01/09/2017
+ ;; Last Revision 01/13/2017
  
   ;;use robots instead of turtles
   breed [robots robot]
@@ -145,7 +145,7 @@ end
 ;Make a base at the origin.
 to make-base
   ask patches[
-    if distancexy 0 0 < 4 [set pcolor green]
+    if distancexy 0 0 = 0 [set pcolor green]
   ]
   
 end
@@ -495,7 +495,7 @@ SWITCH
 67
 414
 192
-448
+447
 pen-down?
 pen-down?
 0

@@ -117,7 +117,7 @@
    ;;Make the base. 
    ask patches
    [
-     if distancexy 0 0 < 4 [set pcolor green]
+     if distancexy 0 0 = 0 [set pcolor green]
    ]                      
                                         
   ;;reset ticks to 0

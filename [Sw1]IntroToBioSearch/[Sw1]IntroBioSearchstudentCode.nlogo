@@ -4,7 +4,7 @@
  ;; The University of New Mexico
  ;; Swarmathon 1: Introduction to Bio-Inspired Search
  ;; version 1.0
- ;; Last Revision 01/05/2017
+ ;; Last Revision 01/13/2017
 
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  ;;    Globals and Properties    ;;
@@ -76,13 +76,12 @@
    
    
    ;;This code makes a base for the robot to return to when it finds a rock.
-   ;;We'll center the base at the origin (0,0), and make it a circle with radius 3.
-   ;;Let's color it green.
+   ;;We'll center the base at the origin (0,0). Let's color it green.
    ask patches
    [
-     if distancexy 0 0 < 4 ;;if the distance from the origin is less than 4
+     if distancexy 0 0 = 0 ;;if we're at the origin
      [
-       set pcolor green    ;;color the patches there green
+       set pcolor green    ;;color the patch there green
      ]
    ]                      
                                         

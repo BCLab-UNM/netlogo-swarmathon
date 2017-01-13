@@ -7,7 +7,7 @@
  ;; The University of New Mexico
  ;; Swarmathon 2: Advanced Bio-Inspired Search
  ;; version 1.0
- ;; Last Revision 01/05/2017
+ ;; Last Revision 01/13/2017
 
  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  ;;    Globals and Properties    ;;

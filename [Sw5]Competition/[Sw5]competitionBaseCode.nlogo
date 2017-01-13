@@ -1,70 +1,96 @@
- ;----------------------------------------------------------------------------------------------
+;----------------------------------------------------------------------------------------------
+ ;; COMPETITION SUBMISSION FILE
+;----------------------------------------------------------------------------------------------
  ;; Elizabeth E. Esterly
  ;; elizabeth@cs.unm.edu
  ;; The University of New Mexico
- ;; Swarmathon 3: Introduction to Deterministic Search
+ ;; Swarmathon 5: Competition
  ;; version 1.0
  ;; Last Revision 01/13/2017
+;----------------------------------------------------------------------------------------------
+  ;;
+  ;;Replace this comment with 
+  ;;team 
+  ;;mentor 
+  ;;high school names
+;---------------------------------------------------------------------------------------------- 
  
-  ;;use robots instead of turtles
-  breed [robots robot]
-  
-  ;;1) robots need to know:
-  robots-own [
-     ;;are they currently working with a list of rock locations? (in the processingList? state)
-     
-     
-     ;;are they currently returning to the base? (in the returning? state)
-    
-     
-     ;;store a list of rocks we have seen
-     ;;rockLocations is a list of lists: [ [a b] [c d]...[y z] ]
-    
-           
-     ;;target coordinate x
-    
-            
-     ;;target coordinate y
-   
-     
-     ;;what heading (direction they are facing in degrees) they start with
-  ]
- 
-  
-  ;;patches need to know:
+;------------------------------------------------------------------------------------
+;::::::::::::::::::::!!!!!!!!!   REQUIRED CODE  !!!!!!!!!::::::::::::::::::::
+;------------------------------------------------------------------------------------
+ ;;Use the bitmap extension.
+ extensions[bitmap]
+
   patches-own [
-     ;;base color before adding rocks
      baseColor
+     ;;You may add additional patches-own variables below this comment.
+     
     ]  
 
 
 
+
+ 
+;------------------------------------------------------------------------------------
+;::::::::::::::::::::!!!!!!!!!   REQUIRED CODE  !!!!!!!!!::::::::::::::::::::
+;------------------------------------------------------------------------------------
 ;------------------------------------------------------------------------------------
  ;;;;;;;;;;;;;;;;;;
  ;;    setup     ;; : MAIN PROCEDURE
  ;;;;;;;;;;;;;;;;;;
  ;------------------------------------------------------------------------------------
-;Organize the code into main procedures and sub procedures.
+;;Write the setup procedure.
 to setup
-  ca ;clear all
-  cp ;clear patches
-  reset-ticks ;keep track of simulation runtime
-  
-  ;setup calls these three sub procedures.
-  make-robots 
-  make-rocks
-  make-base
+  file-config
+   ;;You may add additional setup commands below this comment.
+ 
+
 end
 
-;This sub procedure has been completed for you.
+
+
+ 
+;------------------------------------------------------------------------------------
+;::::::::::::::::::::!!!!!!!!!   REQUIRED CODE  !!!!!!!!!::::::::::::::::::::
+;------------------------------------------------------------------------------------
+ ;;;;;;;;;;;;;;;;;;;;;;;;;
+ ;;    ROBOT CONTROL    ;; : MAIN PROCEDURE
+ ;;;;;;;;;;;;;;;;;;;;;;;;;
+ ;------------------------------------------------------------------------------------
+ ;;Write the robot-control procedure.
+to robot-control
+  
+  
+  ;;tick needs to come last in your robot-control procedure.
+  ;------------------------------------------------------------------------------------
+   tick 
+end
+
+
+
+
+;;KEEP THIS REQUIRED CODE AT THE BOTTOM OF YOUR FILE.
+;------------------------------------------------------------------------------------
+;::::::::::::::::::::!!!!!!!!!   REQUIRED CODE  !!!!!!!!!::::::::::::::::::::
+;------------------------------------------------------------------------------------
+ ;;;;;;;;;;;;;;;;;;;;;;;
+ ;;   file-config     ;; 
+ ;;;;;;;;;;;;;;;;;;;;;;;
+ ;------------------------------------------------------------------------------------
+;;
+ to file-config
+  ca ;clear all
+  cp ;clear patches
+  bitmap:copy-to-pcolors bitmap:import "parkingLot.jpg" true
+  reset-ticks ;keep track of simulation runtime
+  make-rocks
+  make-base
+ end
+ 
+
 ;------------------------------------------------------------------------------------
 to make-rocks
-   ask patches [
-  ;;add some variation in the patches by adding a numerical value (color + random number)
-    set pcolor black + random 3
-  ;;store color by setting baseColor variable before adding rocks
-    set baseColor pcolor
-   ]
+   ask patches [ set baseColor pcolor]
    
    if distribution = "cross" or distribution = "random + cross" 
    or distribution = "clusters + cross" or distribution = "random + clusters + cross" [make-cross]
@@ -77,32 +103,27 @@ to make-rocks
    
 end
 
-;Fill in the next two sub procedures.
-;------------------------------------------------------------------------------------
-;;1) Create the number of robots equal to the value of the numberOfRobots slider.
-;; Set their properties and their variables that you defined previously.
-to make-robots
 
-    
-end
 
 ;------------------------------------------------------------------------------------
-;;2) Place rocks in a cross formation.
+;;Place rocks in a cross formation.
 to make-cross
-                       
+  ask patches [           
     ;;Set up the cross by taking the max coordinate value, doubling it, then only setting a rock if the
     ;;x or y coord is evenly divisible by that value. 
     ;;NOTE: This technique assumes a square layout.                  
-                  
+    let doublemax max-pxcor * 2 
+    if pxcor mod doublemax = 0 or pycor mod doublemax = 0 [ set pcolor yellow ]  
+  ]                   
 end
 
 ;------------------------------------------------------------------------------------
-;Place rocks randomly.
+;;Place rocks randomly.
 to make-random
    let targetPatches singleRocks
      while [targetPatches > 0][
        ask one-of patches[
-         if pcolor != black and pcolor != yellow[
+         if pcolor != yellow[
            set pcolor yellow
            set targetPatches targetPatches - 1
          ]
@@ -111,13 +132,12 @@ to make-random
 end
 
 ;------------------------------------------------------------------------------------
-;Place rocks in clusters.
+;;Place rocks in clusters.
 to make-clusters
    let targetClusters clusterRocks
      while [targetClusters > 0][
        ask one-of patches[
-         if pcolor != black and pcolor != yellow 
-            and [pcolor] of neighbors4 != black and [pcolor] of neighbors4 != yellow[
+         if pcolor != yellow and [pcolor] of neighbors4 != yellow[
            set pcolor yellow
            ask neighbors4[ set pcolor yellow ]
            set targetClusters targetClusters - 1
@@ -130,200 +150,16 @@ end
 ;Make a base at the origin.
 to make-base
   ask patches[
-    if distancexy 0 0  = 0 [set pcolor green]
+    if distancexy 0 0 = 0 [set pcolor green]
   ]
-  
 end
-
-;------------------------------------------------------------------------------------
- ;;;;;;;;;;;;;;;;;
- ;;    DFS      ;; : MAIN PROCEDURE
- ;;;;;;;;;;;;;;;;;
- ;------------------------------------------------------------------------------------
-
-;;Write the DFS procedure.
-to DFS 
-  
-  ;;1) Put the exit condition first. Stop when no yellow patches (rocks) remain.
-
-  
-  ;;All sub procedures called after this (set-direction, do-DFS, process-list) are within the ask robots block.
-  ;;So, the procedures act as if they are already in ask robots.
-  ;;That means that when you write the sub procedures, you don't need to repeat the ask robots command.
-  
-  ;;2)
-
-      
-   ;;If the robot can't move, it must've reached a boundary.
-
-     ;;Add the last rock to our list if we're standing on it by calling do-DFS.
-    
-                   
-     ;;If there's anything in our list, turn on the processingList? status.
-    
-                 
-     ;;else go home to reset our search angle.
  
-     
-   ;;3) Main control of the procedure goes here in an ifelse statement.   
-   ;;Check if we are in the processing list state and not returning. If we are, then process the list.
-   ;;(While we are processing, we'll also sometimes be in the returning? state
-   ;;at the same time when we're dropping off rocks.
-   ;;Robots should only process the list though when they're not dropping off a rock.
-      
-   
-   ;;If returning mode is on, the robots should return-to-base.
-      
-   
-   ;;Else, if the robots are not processing a list and not returning, they should do DFS.
-    
-   
-
-  tick ;;tick must be called from observer context--place outside the ask robots block.
-end
-
-;------------------------------------------------------------------------------------
- ;;;;;;;;;;;;;;;;;;
- ;; process-list ;; : MAIN PROCEDURE
- ;;;;;;;;;;;;;;;;;;
-;------------------------------------------------------------------------------------
-;;Write the process-list procedure.
-to process-list
-  
-  ;;1) Control the robots based on the status of their internal list of rocks.
-  ;;If the robot's list is not empty:
- 
-    
-  ;;2) ;If locX and locY are set to 0, then we just started or we just dropped off a rock.
-  
-    
-    ;;If they are, then we need a new destination, so reset our target coordinates, locX and locY.
-    ;;We'll write the code for that in a sub procedure, so just call the procedure for now. 
-     
-   
-    ;;Now move-to-location of locX locY.
-    ;;We'll write the code for that in a sub procedure, so just call the procedure for now. 
-
-  
-  ;;3) rockLocations is empty. We're done processing the list.
-
-
-  ;;Go forward 1 step.
-  fd 1
-  
-end
-
-;;Fill in sub procedures.
-;------------------------------------------------------------------------------------ 
-;;1) Reset the robot's target coordinates when they are still processing the list but 
-;;have just dropped off a rock and don't know where to go.
-;;Recall that rockLocations is a list of lists: [ [a b] [c d]...[y z] ]
-to reset-target-coords
- 
-  ;;if rockLocations is not empty
-  
-  
-       ;;Grab the first element of rockLocations, a list of 2 coordinates: [a b]
-     
-       
-       ;;Now set robots-own x to the first element of this [a _]
-       
-       
-       ;;and robots-own y to the last. [_ b]
-      
-       
-       ;;and keep everything but the first list of coords (the ones we just used) 
-       ;;in rockLocations. --> [ [c d]...[y z] ]
-
-       
-end
-;------------------------------------------------------------------------------------
-
-;;2) The robot arrived at its locX locY. Pick up the rock and set the robot's mode
-;;to returning so it can drop off the rock. Remain in processing state so the robot goes
-;;back to processing the list after dropping off the rock.
-to move-to-location
-  
-  ;;If we've reached our target coordinates locX and locY,
-  
-  
-       ;; pick up the rock by setting the robot's shape to the one holding the rock,
-     
-       
-       ;; and ask the patch-here to return to its base color.
- 
-       
-       ;; Turn on returning? mode.
-
-       
-  ;Else the robot has not arrived yet; face the target location.
-
-  
- end
-
-;------------------------------------------------------------------------------------
- ;;3) We've used the return-to-base procedure many times.
- ;;This time, we'll make some changes to support list processing.
- to return-to-base
-   
- ;; If we're at the origin, we found the base.
-
-    
- ;; Change the robot's shape to the one without the rock.
-  
- 
- ;; We've arrived, so turn off returning? mode.
-  
- 
- ;; set locX 
-  
- 
- ;; and locY to 0. Robots will return to base if they don't find anything.
-  
-  
-  ;;Use an if statement. A robot can also be here if it has finished processing a list
-  ;;of if it didn't find anything at the current angle and was sent back to base. 
-  ;;If this happened, change its heading so it searches in a different direction.
-  ;;It will begin to search +searchAngle degrees from its last heading.
-
-                        
- ;; Else, we didn't find the origin yet--face the origin.
-
- ;; Go forward 1.
- fd 1
- 
- end
-
-;------------------------------------------------------------------------------------
- ;;;;;;;;;;;;;;;;;
- ;; do-DFS      ;; : MAIN PROCEDURE
- ;;;;;;;;;;;;;;;;;
- ;------------------------------------------------------------------------------------
-;;Write the do-DFS procedure. do-DFS finds rocks and stores them in a list. 
-to do-DFS
- 
-  ;;1) ask the patch-here
- 
-  
-     ;;if its pcolor is yellow,
-  
-     
-      ;;make a list of the coords of the rock we're on.
-   
-     
-          ;;to add those coordinates to the front of their list of rocklocations and remove any duplicates.
-
-
-  ;;Go forward 1.
-  fd 1
-  
-end
 @#$#@#$#@
 GRAPHICS-WINDOW
-210
-10
-725
-546
+235
+13
+750
+549
 50
 50
 5.0
@@ -347,10 +183,10 @@ ticks
 5.0
 
 BUTTON
-128
-12
-195
-46
+14
+10
+81
+44
 setup
 setup
 NIL
@@ -364,12 +200,12 @@ NIL
 1
 
 BUTTON
-129
-64
-193
-98
-DFS
-DFS
+89
+11
+207
+45
+robot-control
+robot-control
 T
 1
 T
@@ -381,10 +217,10 @@ NIL
 1
 
 MONITOR
-83
-114
-197
-159
+15
+60
+129
+105
 rocks remaining
 count patches with [pcolor = yellow]
 17
@@ -392,39 +228,24 @@ count patches with [pcolor = yellow]
 11
 
 CHOOSER
-10
-170
-198
-215
+17
+148
+205
+193
 distribution
 distribution
 "cross" "random" "clusters" "clusters + cross" "random + clusters" "random + cross" "random + clusters + cross"
-6
+0
 
 SLIDER
-10
-225
-182
-258
+17
+199
+189
+232
 singleRocks
 singleRocks
 0
 100
-100
-5
-1
-NIL
-HORIZONTAL
-
-SLIDER
-11
-268
-183
-301
-clusterRocks
-clusterRocks
-0
-50
 50
 5
 1
@@ -432,30 +253,15 @@ NIL
 HORIZONTAL
 
 SLIDER
-18
-318
-190
-351
-numberOfRobots
-numberOfRobots
-1
-10
-6
-1
-1
-NIL
-HORIZONTAL
-
-SLIDER
-18
-366
-190
-399
-searchAngle
-searchAngle
-5
-90
-5
+17
+237
+189
+270
+clusterRocks
+clusterRocks
+0
+50
+30
 5
 1
 NIL
