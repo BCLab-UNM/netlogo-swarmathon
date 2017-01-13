@@ -85,17 +85,26 @@ end
 
 ;This sub procedure has been completed for you.
 ;------------------------------------------------------------------------------------
+;------------------------------------------------------------------------------------
 to make-rocks
    ask patches [ set baseColor pcolor]
    
-   if distribution = "cross" or distribution = "random + cross" 
-   or distribution = "clusters + cross" or distribution = "random + clusters + cross" [make-cross]
+   if distribution = "cross" or distribution = "random + cross" or distribution = "large clusters + cross"
+   or distribution = "clusters + cross" or distribution = "random + clusters + cross" 
+   or distribution = "random + clusters + large clusters + cross"[make-cross]
    
    if distribution = "random" or distribution = "random + cross" or distribution = "random + clusters"
-   or distribution = "random + clusters + cross" [make-random]
+   or distribution = "random + large clusters" or distribution = "random + clusters + cross" 
+   or distribution = "random + clusters + large clusters + cross" [make-random]
    
    if distribution = "clusters" or distribution = "clusters + cross" or distribution = "random + clusters"
-   or distribution = "random + clusters + cross" [make-clusters]
+   or distribution = "clusters + large clusters" or distribution = "random + clusters + cross" 
+   or distribution = "random + clusters + large clusters + cross" [make-clusters]
+   
+
+   if distribution = "large clusters" or distribution = "large clusters + cross"
+   or distribution = "random + large clusters"  or distribution = "clusters + large clusters" 
+   or distribution = "random + clusters + large clusters + cross" [make-large-clusters]
    
 end
 
@@ -209,6 +218,21 @@ to make-clusters
            set targetClusters targetClusters - 1
          ]
        ]
+     ]
+end
+
+;------------------------------------------------------------------------------------
+;;Place rocks in large clusters.
+to make-large-clusters
+   let targetLargeClusters largeClusterRocks
+   while [targetLargeClusters > 0][
+     ask one-of patches[
+       if pcolor != yellow and [pcolor] of patches in-radius 3 != yellow[
+         set pcolor yellow
+         ask patches in-radius 3 [set pcolor yellow]
+         set targetLargeClusters targetLargeClusters - 1
+       ]
+     ]
      ]
 end
 
@@ -649,12 +673,12 @@ count patches with [pcolor = yellow]
 CHOOSER
 17
 148
-205
+231
 193
 distribution
 distribution
-"cross" "random" "clusters" "clusters + cross" "random + clusters" "random + cross" "random + clusters + cross"
-2
+"cross" "random" "clusters" "large clusters" "random + cross" "clusters + cross" "clusters + large clusters" "large clusters + cross" "random + clusters" "random + large clusters" "random + clusters + cross" "random + clusters + large clusters + cross"
+11
 
 SLIDER
 17
@@ -687,10 +711,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-19
-298
-191
-331
+16
+335
+188
+368
 numberOfDFSRobots
 numberOfDFSRobots
 0
@@ -702,10 +726,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-19
-341
-191
-374
+16
+378
+188
+411
 searchAngle
 searchAngle
 1
@@ -717,10 +741,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-19
-413
-192
-446
+16
+450
+189
+483
 numberOfSpiralRobots
 numberOfSpiralRobots
 0
@@ -743,10 +767,10 @@ pen-down?
 -1000
 
 SLIDER
-20
-456
-192
-489
+17
+493
+189
+526
 turnAngle
 turnAngle
 0
@@ -758,24 +782,39 @@ NIL
 HORIZONTAL
 
 TEXTBOX
-20
-284
-170
-302
+17
+321
+167
+339
 sliders for DFS-robots\n
 11
 0.0
 1
 
 TEXTBOX
-19
-396
-169
-414
+16
+433
+166
+451
 sliders for spiral-robots
 11
 0.0
 1
+
+SLIDER
+17
+278
+189
+311
+largeClusterRocks
+largeClusterRocks
+0
+20
+5
+1
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?

@@ -69,7 +69,7 @@ end
 
 
 
-;;KEEP THIS REQUIRED CODE AT THE BOTTOM OF YOUR FILE.
+;;KEEP THE FOLLOWING CODE AT THE BOTTOM OF YOUR FILE.
 ;------------------------------------------------------------------------------------
 ;::::::::::::::::::::!!!!!!!!!   REQUIRED CODE  !!!!!!!!!::::::::::::::::::::
 ;------------------------------------------------------------------------------------
@@ -92,18 +92,23 @@ end
 to make-rocks
    ask patches [ set baseColor pcolor]
    
-   if distribution = "cross" or distribution = "random + cross" 
-   or distribution = "clusters + cross" or distribution = "random + clusters + cross" [make-cross]
+   if distribution = "cross" or distribution = "random + cross" or distribution = "large clusters + cross"
+   or distribution = "clusters + cross" or distribution = "random + clusters + cross" 
+   or distribution = "random + clusters + large clusters + cross"[make-cross]
    
    if distribution = "random" or distribution = "random + cross" or distribution = "random + clusters"
-   or distribution = "random + clusters + cross" [make-random]
+   or distribution = "random + large clusters" or distribution = "random + clusters + cross" 
+   or distribution = "random + clusters + large clusters + cross" [make-random]
    
    if distribution = "clusters" or distribution = "clusters + cross" or distribution = "random + clusters"
-   or distribution = "random + clusters + cross" [make-clusters]
+   or distribution = "clusters + large clusters" or distribution = "random + clusters + cross" 
+   or distribution = "random + clusters + large clusters + cross" [make-clusters]
+   
+   if distribution = "large clusters" or distribution = "large clusters + cross"
+   or distribution = "random + large clusters"  or distribution = "clusters + large clusters" 
+   or distribution = "random + clusters + large clusters + cross" [make-large-clusters]
    
 end
-
-
 
 ;------------------------------------------------------------------------------------
 ;;Place rocks in a cross formation.
@@ -143,6 +148,21 @@ to make-clusters
            set targetClusters targetClusters - 1
          ]
        ]
+     ]
+end
+
+;------------------------------------------------------------------------------------
+;;Place rocks in large clusters.
+to make-large-clusters
+   let targetLargeClusters largeClusterRocks
+   while [targetLargeClusters > 0][
+     ask one-of patches[
+       if pcolor != yellow and [pcolor] of patches in-radius 3 != yellow[
+         set pcolor yellow
+         ask patches in-radius 3 [set pcolor yellow]
+         set targetLargeClusters targetLargeClusters - 1
+       ]
+     ]
      ]
 end
 
@@ -228,14 +248,14 @@ count patches with [pcolor = yellow]
 11
 
 CHOOSER
-17
-148
-205
-193
+15
+323
+232
+368
 distribution
 distribution
-"cross" "random" "clusters" "clusters + cross" "random + clusters" "random + cross" "random + clusters + cross"
-0
+"cross" "random" "clusters" "large clusters" "random + cross" "clusters + cross" "clusters + large clusters" "large clusters + cross" "random + clusters" "random + large clusters" "random + clusters + cross" "random + clusters + large clusters + cross"
+11
 
 SLIDER
 17
@@ -246,7 +266,7 @@ singleRocks
 singleRocks
 0
 100
-50
+45
 5
 1
 NIL
@@ -261,8 +281,23 @@ clusterRocks
 clusterRocks
 0
 50
-30
+25
 5
+1
+NIL
+HORIZONTAL
+
+SLIDER
+17
+278
+189
+311
+largeClusterRocks
+largeClusterRocks
+0
+20
+3
+1
 1
 NIL
 HORIZONTAL
