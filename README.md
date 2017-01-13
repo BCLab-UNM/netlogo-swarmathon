@@ -1,5 +1,5 @@
 # netlogo-swarmathon
-A series of 5 tutorial modules created in NetLogo that prepare the user for participation in the NetLogo Division of the NASA Swarmathon.
+This is a series of 5 tutorial modules created in NetLogo that prepare the user for participation in the NetLogo Division of the NASA Swarmathon.
 
 # Contents
 <b>Swarmathon 1 (Intro to bio-inspired search)</b><br>
