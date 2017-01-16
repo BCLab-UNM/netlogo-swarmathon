@@ -17,7 +17,8 @@ This is a series of 5 tutorial modules created in NetLogo that prepare the user 
 <li> mars.jpg (required to run .nlogo file)
 </ul><br>
 <b>Swarmathon 3 (Intro to deterministic search)</b><br>
-<ul>[Sw3]IntroDetSearchstudentCode.nlogo (base code to work from)
+<ul>
+<li>[Sw3]IntroDetSearchstudentCode.nlogo (base code to work from)
 <li>[Sw3]walkthrough images (folder; .png, .jpg)
 </ul><br>
 <b>Swarmathon 4 (Advanced deterministic search)</b><br>
@@ -27,16 +28,20 @@ This is a series of 5 tutorial modules created in NetLogo that prepare the user 
 <li>parkingLot.jpg (required to run .nlogo file)
 </ul><br>
 <b>Swarmathon 5 (Competition submission)</b><br>
+<ul>
 <li>[Sw5]competitionGuide (.pdf, .docx, .pages)
-<ul>[Sw5]competitionBaseCode.nlogo (base code to work from)
+<li>[Sw5]competitionBaseCode.nlogo (base code to work from)
 <li>[Sw5]guideImages (folder; .png, .jpg)
 </ul><br>
+<b>Module Companion Guide</b><br>
+<ul>
+<li>[SwG]ModuleCompanionGuide (.pdf, .docx, .pages)
+</ul></br>
 
 <u>COMING SOON</u><br>
 <ul>
 <li>[Sw3]IntroDetSearchwalkthrough(.pdf, .docx, .pages) 
 <li>[Sw4]AdvDetSearchwalkthrough (.pdf, .docx, .pages)
-<li>Swarmathon[1-5] Module User Guide/Getting Started/FAQ
 </ul><br>
 <u>KNOWN BUGS AND WORKAROUNDS</u><br>
 <ul>
