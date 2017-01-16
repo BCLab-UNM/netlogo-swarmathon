@@ -397,7 +397,7 @@ singleRocks
 singleRocks
 0
 100
-0
+50
 5
 1
 NIL
@@ -412,7 +412,7 @@ clusterRocks
 clusterRocks
 0
 50
-50
+25
 1
 1
 NIL
@@ -468,7 +468,7 @@ largeClusterRocks
 largeClusterRocks
 0
 10
-10
+0
 1
 1
 NIL
