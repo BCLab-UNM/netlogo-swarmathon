@@ -4,7 +4,7 @@
  ;; The University of New Mexico
  ;; Swarmathon 3: Introduction to Deterministic Search
  ;; version 1.0
- ;; Last Revision 01/13/2017
+ ;; Last Revision 01/16/2017
  
   ;;use robots instead of turtles
   breed [robots robot]
@@ -50,43 +50,16 @@ to setup
   cp ;clear patches
   reset-ticks ;keep track of simulation runtime
   
-  ;setup calls these three sub procedures.
-  make-robots 
-  make-rocks
+ ;setup calls these three sub procedures.
+  make-robots ;;you will write this one.
+  make-rocks  
   make-base
 end
 
-;This sub procedure has been completed for you.
-;------------------------------------------------------------------------------------
-to make-rocks
-   ask patches [
-  ;;add some variation in the patches by adding a numerical value (color + random number)
-    set pcolor black + random 3
-  ;;store color by setting baseColor variable before adding rocks
-    set baseColor pcolor
-   ]
-   
-   if distribution = "cross" or distribution = "random + cross" or distribution = "large clusters + cross"
-   or distribution = "clusters + cross" or distribution = "random + clusters + cross" 
-   or distribution = "random + clusters + large clusters + cross"[make-cross]
-   
-   if distribution = "random" or distribution = "random + cross" or distribution = "random + clusters"
-   or distribution = "random + large clusters" or distribution = "random + clusters + cross" 
-   or distribution = "random + clusters + large clusters + cross" [make-random]
-   
-   if distribution = "clusters" or distribution = "clusters + cross" or distribution = "random + clusters"
-   or distribution = "clusters + large clusters" or distribution = "random + clusters + cross" 
-   or distribution = "random + clusters + large clusters + cross" [make-clusters]
-   
 
-   if distribution = "large clusters" or distribution = "large clusters + cross"
-   or distribution = "random + large clusters"  or distribution = "clusters + large clusters" 
-   or distribution = "random + clusters + large clusters + cross" [make-large-clusters]
 
-   
-end
-
-;Fill in the next two sub procedures.
+;Fill in the make-robots sub-procedure below, then carefully read the sub-procedures that follow 
+;to understand what the code is doing.
 ;------------------------------------------------------------------------------------
 ;;1) Create the number of robots equal to the value of the numberOfRobots slider.
 ;; Set their properties and their variables that you defined previously.
@@ -96,13 +69,15 @@ to make-robots
 end
 
 ;------------------------------------------------------------------------------------
-;;2) Place rocks in a cross formation.
+;;Place rocks in a cross formation.
 to make-cross
-                       
+  ask patches [        
     ;;Set up the cross by taking the max coordinate value, doubling it, then only setting a rock if the
     ;;x or y coord is evenly divisible by that value. 
     ;;NOTE: This technique assumes a square layout.                  
-                  
+    let doublemax max-pxcor * 2 
+    if pxcor mod doublemax = 0 or pycor mod doublemax = 0 [ set pcolor yellow ]  
+  ]                   
 end
 
 ;------------------------------------------------------------------------------------
@@ -159,6 +134,35 @@ to make-base
   
 end
 
+;This sub procedure has been completed for you.
+;------------------------------------------------------------------------------------
+to make-rocks
+   ask patches [
+  ;;add some variation in the patches by adding a numerical value (color + random number)
+    set pcolor black + random 3
+  ;;store color by setting baseColor variable before adding rocks
+    set baseColor pcolor
+   ]
+   
+   if distribution = "cross" or distribution = "random + cross" or distribution = "large clusters + cross"
+   or distribution = "clusters + cross" or distribution = "random + clusters + cross" 
+   or distribution = "random + clusters + large clusters + cross"[make-cross]
+   
+   if distribution = "random" or distribution = "random + cross" or distribution = "random + clusters"
+   or distribution = "random + large clusters" or distribution = "random + clusters + cross" 
+   or distribution = "random + clusters + large clusters + cross" [make-random]
+   
+   if distribution = "clusters" or distribution = "clusters + cross" or distribution = "random + clusters"
+   or distribution = "clusters + large clusters" or distribution = "random + clusters + cross" 
+   or distribution = "random + clusters + large clusters + cross" [make-clusters]
+   
+
+   if distribution = "large clusters" or distribution = "large clusters + cross"
+   or distribution = "random + large clusters"  or distribution = "clusters + large clusters" 
+   or distribution = "random + clusters + large clusters + cross" [make-large-clusters]
+
+end
+
 ;------------------------------------------------------------------------------------
  ;;;;;;;;;;;;;;;;;
  ;;    DFS      ;; : MAIN PROCEDURE
@@ -171,7 +175,7 @@ to DFS
   ;;1) Put the exit condition first. Stop when no yellow patches (rocks) remain.
 
   
-  ;;All sub procedures called after this (set-direction, do-DFS, process-list) are within the ask robots block.
+  ;;All procedures called after this (set-direction, do-DFS, process-list) are within the ask robots block.
   ;;So, the procedures act as if they are already in ask robots.
   ;;That means that when you write the sub procedures, you don't need to repeat the ask robots command.
   
@@ -286,7 +290,11 @@ to move-to-location
  end
 
 ;------------------------------------------------------------------------------------
- ;;3) We've used the return-to-base procedure many times.
+ ;;;;;;;;;;;;;;;;;;;;
+ ;; return-to-base ;; : MAIN PROCEDURE
+ ;;;;;;;;;;;;;;;;;;;;
+;------------------------------------------------------------------------------------
+ ;;1) We've used the return-to-base procedure many times.
  ;;This time, we'll make some changes to support list processing.
  to return-to-base
    
