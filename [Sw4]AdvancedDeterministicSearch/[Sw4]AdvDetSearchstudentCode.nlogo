@@ -5,7 +5,7 @@
  ;; The University of New Mexico
  ;; Swarmathon 4: Advanced Deterministic Search
  ;; version 1.0
- ;; Last Revision 01/13/2017
+ ;; Last Revision 01/18/2017
  ;; spiral-robots based on a program by Antonio Griego
  ;; deano505@unm.edu
  
