@@ -1,5 +1,5 @@
 # netlogo-swarmathon
-This is a series of 5 tutorial modules created in NetLogo that prepare the user for participation in the NetLogo Division of the NASA Swarmathon.
+This is a series of 4 tutorial modules [Sw1-4] created in NetLogo that prepare the user for participation in the HS Division of the 2017 NASA Swarmathon. One additional module, [Sw5], serves as the base for the participant's competition submission.
 
 # Contents
 <b>Swarmathon 1 (Intro to bio-inspired search)</b><br>
@@ -18,11 +18,13 @@ This is a series of 5 tutorial modules created in NetLogo that prepare the user 
 </ul><br>
 <b>Swarmathon 3 (Intro to deterministic search)</b><br>
 <ul>
+<li>[Sw3]IntroDetSearchwalkthrough(.pdf, .docx, .pages) 
 <li>[Sw3]IntroDetSearchstudentCode.nlogo (base code to work from)
 <li>[Sw3]walkthrough images (folder; .png, .jpg)
 </ul><br>
 <b>Swarmathon 4 (Advanced deterministic search)</b><br>
 <ul>
+<li>[Sw4]AdvDetSearchwalkthrough (.pdf, .docx, .pages)
 <li>[Sw4]walkthroughImages (folder; .png, .jpg)
 <li>[Sw4]AdvDetSearchstudentCode.nlogo (base code to work from)
 <li>parkingLot.jpg (required to run .nlogo file)
@@ -38,10 +40,6 @@ This is a series of 5 tutorial modules created in NetLogo that prepare the user 
 <li>[SwG]ModuleCompanionGuide (.pdf, .docx, .pages)
 </ul></br>
 
-<u>COMING SOON</u><br>
-<ul>
-<li>[Sw3]IntroDetSearchwalkthrough(.pdf, .docx, .pages) 
-<li>[Sw4]AdvDetSearchwalkthrough (.pdf, .docx, .pages)
 </ul><br>
 <u>KNOWN BUGS AND WORKAROUNDS</u><br>
 <ul>
