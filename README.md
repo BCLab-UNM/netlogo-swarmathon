@@ -1,5 +1,6 @@
 # netlogo-swarmathon
 This is a series of 4 tutorial modules [Sw1-4] created in NetLogo that prepare the user for participation in the HS Division of the 2017 NASA Swarmathon. One additional module, [Sw5], serves as the base for the participant's competition submission.
+Click on the releases tab to get the full zip of the newest release!
 
 # Contents
 <b>Swarmathon 1 (Intro to bio-inspired search)</b><br>
